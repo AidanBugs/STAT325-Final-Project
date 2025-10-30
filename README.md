@@ -1,2 +1,2 @@
 # Data Analysis Final Project
-This is a project for STAT325 that is oriented around presence of algorithmic bias for AI resume screening systems.
+This is a project for STAT325 that is oriented around presence of algorithmic bias for AI resume screening systems. This project is hosted on github pages and can be found at [https://aidanbugayong.github.io/STAT325_Final_Project](https://aidanbugayong.github.io/STAT325_Final_Project)

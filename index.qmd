@@ -1,0 +1,21 @@
+---
+format: pdf
+title: "Algorithmic Bias in AI Resume Screening"
+execute:
+  echo: false
+toc: true
+---
+
+
+# 1 Introduction
+## 1.1 Context and Background
+
+## 1.2 Project Purpose
+
+# 2 Methods
+## 2.1 Data Collection and Purpose
+
+## 2.2 Data Processing
+
+## 2.3 Statistical Tools
+

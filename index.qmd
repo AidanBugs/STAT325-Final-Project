@@ -13,11 +13,17 @@ website:
   favicon: "images\\CWRU.jpg"
 ---
 
+# 0 Data / Code Updates
+Currently for the data processing/creating steps I currently have a predicted gender / ethnicity columns (works for subset of data still need to run for the entire dataset). I am currently working on the institutional bias portion of the project where determining the prestiege level of the institutions in the data set. Currently debating on how I obtain the resume scores for the data set. Specifically, debating if I should use reseume screeners online or use different LLM's to score the resumes. 
 
 # 1 Introduction
 ## 1.1 Context and Background
+Resume screeners were developed in order to screen canidates more efficiently and reduce the human bias in the screening process. However, there are concerns with whether or not these automated resume screening systems are truly unbiased in thier decision making process. As more and more companies use some form of AI automation in their hiring process, the question of whether or not these systems are unbiased has become more important. 
+
+
 
 ## 1.2 Project Purpose
+This project aims to determine if there is any bias in the decision making process of resume screeners and what sorts of factors contribute to the scoring process of a resume.
 
 # 2 Methods
 ## 2.1 Data Collection and Purpose
@@ -30,7 +36,5 @@ website:
 
 # 4 Conclusion
 
-# 5 Acknowledgements
-
-# 6 References
+# 5 References
 

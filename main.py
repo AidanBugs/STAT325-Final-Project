@@ -86,7 +86,6 @@ def remove_missing_school(records: list) -> tuple:
             removed += 1
             continue
         name = inst.get('name') + ": " + inst.get('location') if isinstance(inst, dict) else None
-        print(name)
         if name is None:
             removed += 1
             continue
@@ -121,6 +120,8 @@ def main():
     if removed_missing_school:
         print(f"Removed {removed_missing_school} records missing institution.name")
 
+    # Need to still find GPA's and years of experience
+
     kept = len(cleaned)
 
     with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
@@ -130,14 +131,16 @@ def main():
 
     print("Cleaned resumes:", kept)
 
-    print("Starting demographic prediction...")
-    # results = predict_demographics()
-    # print(f"Completed! Processed {len(results)} resumes.")
+    a = input("Do you want to proceed to demographic prediction? (y/n): ")
+    if a.lower() != 'y':
+        print("Starting demographic prediction...")
+        results = predict_demographics()
+        print(f"Completed! Processed {len(results)} resumes.")
 
-    # filename = "data\\predicted_demographics.csv"
-    # f = open(filename, "w+")
-    # f.close()
-    # pd.DataFrame(results).to_csv(base / "data\\predicted_demographics.csv", index=False)
+        filename = "data\\predicted_demographics.csv"
+        f = open(filename, "w+")
+        f.close()
+        pd.DataFrame(results).to_csv(base / "data\\predicted_demographics.csv", index=False)
 
 
 if __name__ == "__main__":

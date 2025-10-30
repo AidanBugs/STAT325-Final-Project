@@ -7,6 +7,8 @@ execute:
 format: 
   html:
     toc: true
+  pdf: 
+    toc: true
 website:
   favicon: "images\\CWRU.jpg"
 ---

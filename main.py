@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 from typing import Any
+from DataCreation.gender import predict_demographics
+import pandas as pd
 
 
 def is_nonempty(value: Any) -> bool:
@@ -17,7 +19,7 @@ def is_nonempty(value: Any) -> bool:
     if isinstance(value, (int, float)):
         return True
     if isinstance(value, str):
-        return value.strip() != "" and value.strip().lower() != "n/a" and value.strip().lower() != "unknown"
+        return value.strip() != "" and value.strip().lower() != "n/a" and value.strip().lower() != "unknown" and value.strip().lower() != "not provided" 
     if isinstance(value, (list, tuple, set)):
         for v in value:
             if not is_nonempty(v):
@@ -36,7 +38,7 @@ def record_is_empty(record: Any) -> bool:
     """Return True if the entire record contains no non-empty leaves."""
     if "personal_info" in record:
         return not is_nonempty(record["personal_info"])
-    return False
+    return True
 
 
 def load_jsonl(path: Path):
@@ -52,9 +54,54 @@ def load_jsonl(path: Path):
                 print(f"Warning: failed to parse JSON on line {i}: {e}")
 
 
+def remove_missing_name_records(records: list) -> tuple:
+    kept = []
+    removed = 0
+    for rec in records:
+        pi = rec.get('personal_info') if isinstance(rec, dict) else None
+        if not isinstance(pi, dict):
+            removed += 1
+            continue
+        name = pi.get('name')
+        if name is None:
+            removed += 1
+            continue
+        # treat empty/whitespace-only names as missing
+        if isinstance(name, str) and (name.strip() == '' or "Newcomer" in name or "Developer"  in name or "Engineer" in name or "Scientist" in name):
+            removed += 1
+            continue
+        kept.append(rec)
+    return kept, removed
+
+def remove_missing_school(records: list) -> tuple:
+    kept = []
+    removed = 0
+    for rec in records:
+        ed = rec.get('education')[0] if isinstance(rec, dict) else None
+        if not isinstance(ed, dict):
+            removed += 1
+            continue
+        inst = ed.get('institution') if isinstance(ed, dict) else None
+        if not isinstance(inst, dict):
+            removed += 1
+            continue
+        name = inst.get('name') + ": " + inst.get('location') if isinstance(inst, dict) else None
+        print(name)
+        if name is None:
+            removed += 1
+            continue
+        # treat empty/whitespace-only names as missing
+        if isinstance(name, str) and (name.strip() == ''):
+            removed += 1
+            continue
+        kept.append(rec)
+    return kept, removed
+
+
+
 def main():
     base = Path(__file__).resolve().parent
-    src = base / "resumes.jsonl"
+    src = base / "data\\resumes.jsonl"
     if not src.exists():
         print(f"resumes.jsonl not found at {src}")
         return
@@ -63,9 +110,34 @@ def main():
     total = len(records)
     print(total)
     cleaned = [r for r in records if not record_is_empty(r)]
+
+    cleaned, removed_missing_name = remove_missing_name_records(cleaned)
+
+    if removed_missing_name:
+        print(f"Removed {removed_missing_name} records missing personal_info.name")
+
+    cleaned, removed_missing_school = remove_missing_school(cleaned)
+
+    if removed_missing_school:
+        print(f"Removed {removed_missing_school} records missing institution.name")
+
     kept = len(cleaned)
 
-    print(kept)
+    with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
+        json_file.write("")
+        json.dump(cleaned, json_file, indent=2)
+
+
+    print("Cleaned resumes:", kept)
+
+    print("Starting demographic prediction...")
+    # results = predict_demographics()
+    # print(f"Completed! Processed {len(results)} resumes.")
+
+    # filename = "data\\predicted_demographics.csv"
+    # f = open(filename, "w+")
+    # f.close()
+    # pd.DataFrame(results).to_csv(base / "data\\predicted_demographics.csv", index=False)
 
 
 if __name__ == "__main__":

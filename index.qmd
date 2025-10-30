@@ -1,9 +1,14 @@
 ---
-format: pdf
 title: "Algorithmic Bias in AI Resume Screening"
+author: "Aidan Bugayong"
+title-block-banner: true
 execute:
   echo: false
-toc: true
+format: 
+  html:
+    toc: true
+website:
+  favicon: "images\\CWRU.jpg"
 ---
 
 
@@ -18,4 +23,12 @@ toc: true
 ## 2.2 Data Processing
 
 ## 2.3 Statistical Tools
+
+# 3 Results and Discussion
+
+# 4 Conclusion
+
+# 5 Acknowledgements
+
+# 6 References
 

@@ -11,26 +11,31 @@ def predict_demographics():
     resumes = load_resumes()
     results = pd.DataFrame()
     # Process resumes in batches to avoid making too many API calls
-    batch_size = 40
-    for i in range(0, 50, batch_size):
+    batch_size = 8
+    for i in range(0, 20, batch_size):
         batch = resumes[i:i + batch_size]
         names = [resume['personal_info']['name'] for resume in batch]
 
+        print(names)
+
         # Create the prompt for the LLM
-        prompt = f'''For each name in the following list, predict their likely gender (Male/Female) and likely racial/ethnic background based only on the name. Format the response as CSV. Do not include any explanations or other information, only the CSV data.
+        prompt = f'''For each name in the following list, predict their likely gender (Male/Female/Unknown) and likely racial/ethnic background based only on the name (Caucasian/Hispanic/African American/Middle Eastern/Asian/South Asian). Format the response as CSV. Do not include any explanations or other information. DO NOT use semicolons, use commas as separators. Each prediction should be only from the options provided. 
+        
+        DO NOT leave an answer as multiple choices. DO NOT leave ethnicity as "Unknown". You MUST provide a single answer for each name.
 
 Example format: 
 
-        Name;Gender;Ethnicity
-        John Doe;Male;Caucasian
-        Jane Kim;Female;Asian
+        Name,Gender,Ethnicity
+        John Doe,Male,Caucasian
+        Kevin Diggs,Male,African American
+        Jane Kim,Female,Asian
         
         Names to analyze:
         {('\n'.join(names))}'''
         
         try:
-            response = fetch_chat_completion(prompt)
-            predictions = pd.read_csv(io.StringIO(response), sep=';')
+            response = fetch_chat_completion(query=str(prompt), model=None, local=True)
+            predictions = pd.read_csv(io.StringIO(response), sep=',')
             results = pd.concat([results, predictions], ignore_index=True)
             print(f"Processed {len(results)} names so far...")
         except Exception as e:

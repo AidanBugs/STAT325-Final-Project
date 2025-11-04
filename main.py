@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 from DataCreation.gender import predict_demographics
 import pandas as pd
+import numpy as np
 
 
 def is_nonempty(value: Any) -> bool:
@@ -99,6 +100,7 @@ def remove_missing_school(records: list) -> tuple:
 
 
 def main():
+    np.random.seed(42)
     base = Path(__file__).resolve().parent
     src = base / "data\\resumes.jsonl"
     if not src.exists():
@@ -122,6 +124,10 @@ def main():
 
     # Need to still find GPA's and years of experience
 
+
+    # Remove dupes
+    cleaned = [json.loads(j) for j in {json.dumps(d) for d in cleaned}]
+
     kept = len(cleaned)
 
     with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
@@ -132,7 +138,7 @@ def main():
     print("Cleaned resumes:", kept)
 
     a = input("Do you want to proceed to demographic prediction? (y/n): ")
-    if a.lower() != 'y':
+    if a.lower() == 'y':
         print("Starting demographic prediction...")
         results = predict_demographics()
         print(f"Completed! Processed {len(results)} resumes.")

@@ -11,7 +11,7 @@ def predict_demographics():
     resumes = load_resumes()
     results = pd.DataFrame()
     # Process resumes in batches to avoid making too many API calls
-    batch_size = 8
+    batch_size = 5
     for i in range(0, 20, batch_size):
         batch = resumes[i:i + batch_size]
         names = [resume['personal_info']['name'] for resume in batch]

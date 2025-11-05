@@ -112,6 +112,9 @@ def main():
     print(total)
     cleaned = [r for r in records if not record_is_empty(r)]
 
+    # Remove dupes
+    cleaned = [json.loads(j) for j in {json.dumps(d) for d in cleaned}]
+
     cleaned, removed_missing_name = remove_missing_name_records(cleaned)
 
     if removed_missing_name:
@@ -125,8 +128,6 @@ def main():
     # Need to still find GPA's and years of experience
 
 
-    # Remove dupes
-    cleaned = [json.loads(j) for j in {json.dumps(d) for d in cleaned}]
 
     kept = len(cleaned)
 
@@ -136,6 +137,18 @@ def main():
 
 
     print("Cleaned resumes:", kept)
+
+
+    a = input("Do you want to proceed to resume scoring? (y/n): ")
+    if a.lower() == 'y':
+        print("Starting resume scoring...")
+        results = []# Call your resume scoring function here
+        print(f"Completed! Processed {len(results)} resumes.")
+
+        filename = "data\\scored_resumes.json"
+        f = open(filename, "w+")
+        f.close()
+        pd.DataFrame(results).to_csv(base / "data\\scored_resumes.json", index=False)
 
     a = input("Do you want to proceed to demographic prediction? (y/n): ")
     if a.lower() == 'y':
@@ -147,6 +160,37 @@ def main():
         f = open(filename, "w+")
         f.close()
         pd.DataFrame(results).to_csv(base / "data\\predicted_demographics.csv", index=False)
+    
+    a = input("Do you want to proceed to experience and education extraction? (y/n): ")
+    if a.lower() == 'y':
+        print("Starting experience and education extraction...")
+        results = [] # Call your experience and education extraction function here
+        print(f"Completed! Processed {len(results)} resumes.")
+
+        filename = "data\\experience_education_extraction.csv"
+        f = open(filename, "w+")
+        f.close()
+        pd.DataFrame(results).to_csv(base / "data\\experience_education_extraction.csv", index=False)
+
+    print("Joining csv data...")
+    results = join_csv_data()
+    print(f"Completed! Processed {len(results)} resumes.")
+
+    filename = "data\\joined_resumes.csv"
+    f = open(filename, "w+")
+    f.close()
+    pd.DataFrame(results).to_csv(base / "data\\joined_resumes.csv", index=False)
+
+def join_csv_data() -> pd.DataFrame:
+    base = Path(__file__).resolve().parent
+    scored = pd.read_csv(base / "data\\scored_resumes.json")
+    demographics = pd.read_csv(base / "data\\predicted_demographics.csv")
+    experience_education = pd.read_csv(base / "data\\experience_education_extraction.csv")
+
+    joined = pd.DataFrame()
+    joined = pd.concat([scored, demographics, experience_education], axis=1).reindex(scored.index)
+
+    return joined
 
 
 if __name__ == "__main__":

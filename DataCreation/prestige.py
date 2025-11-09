@@ -7,28 +7,28 @@ def load_resumes():
     with open('data/cleaned_resumes.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
-def predict_demographics(model=None, local=True) -> pd.DataFrame:
+def predict_prestige(model=None, local=True) -> pd.DataFrame:
     resumes = load_resumes()
     results = pd.DataFrame()
     # Process resumes in batches to avoid making too many API calls
     batch_size = 5
     for i in range(0, 20, batch_size):
         batch = resumes[i:i + batch_size]
-        names = [resume['personal_info']['name'] for resume in batch]
+        names = [resume['personal_info']['name'] +": "+ resume['education']['institution']["name"]+" ("+resume["education"]["institution"]["location"] + ")" for resume in batch]
 
         print(names)
 
         # Create the prompt for the LLM
-        prompt = f'''For each name in the following list, predict their likely gender (Male/Female/Unknown) and likely racial/ethnic background based only on the name (Caucasian/Hispanic/African American/Middle Eastern/Asian/South Asian). Format the response as CSV. Do not include any explanations or other information. DO NOT use semicolons, use commas as separators. Each prediction should be only from the options provided. 
+        prompt = f'''For each institution in the following list, predict their likely prestige level (High/Medium/Low/Unknown). Format the response as CSV. Do not include any explanations or other information. DO NOT use semicolons, use commas as separators. Each prediction should be only from the options provided. 
         
         DO NOT leave an answer as multiple choices. DO NOT leave ethnicity as "Unknown". You MUST provide a single answer for each name.
 
 Example format: 
 
-        Name,Gender,Ethnicity
-        John Doe,Male,Caucasian
-        Kevin Diggs,Male,African American
-        Jane Kim,Female,Asian
+        Name,Institution,Prestige
+        John Doe,Illinois Institute of Technology,Medium
+        Kevin Diggs,Boston University,High
+        Jane Kim,College of the Canyons,Low
         
         Names to analyze:
         {('\n'.join(names))}'''
@@ -45,5 +45,5 @@ Example format:
 
 if __name__ == '__main__':
     print("Starting demographic prediction...")
-    results = predict_demographics()
+    results = predict_prestige()
     print(f"Completed! Processed {len(results)} resumes.")

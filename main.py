@@ -2,6 +2,9 @@ import json
 from pathlib import Path
 from typing import Any
 from DataCreation.gender import predict_demographics
+from DataCreation.resume_scorer import score
+from DataCreation.prestige import predict_prestige
+from DataCreation.experience import predict_experience
 import pandas as pd
 import numpy as np
 
@@ -86,7 +89,7 @@ def remove_missing_school(records: list) -> tuple:
         if not isinstance(inst, dict):
             removed += 1
             continue
-        name = inst.get('name') + ": " + inst.get('location') if isinstance(inst, dict) else None
+        name = inst.get('name') if isinstance(inst, dict) else None
         if name is None:
             removed += 1
             continue
@@ -94,7 +97,29 @@ def remove_missing_school(records: list) -> tuple:
         if isinstance(name, str) and (name.strip() == ''):
             removed += 1
             continue
+        location = inst.get('location') if isinstance(inst, dict) else None
+        if location is None:
+            removed += 1
+            continue
+        if isinstance(location, str) and (location.strip() == ''):
+            removed +=1
+            continue
+        ach = ed.get('achievements') if isinstance(inst, dict) else None
+        if ach is None:
+            removed +=1
+            continue
+        if isinstance(ach, str) and (ach.strip() == ''):
+            removed +=1
+            continue
+        gpa = ach.get('gpa') if isinstance(ed, dict) else None
+        if gpa is None:
+            removed +=1
+            continue
+        if isinstance(gpa, str) and (gpa.strip() == ''):
+            removed +=1
+            continue
         kept.append(rec)
+
     return kept, removed
 
 
@@ -109,89 +134,62 @@ def main():
 
     records = list(load_jsonl(src))
     total = len(records)
-    print(total)
+    print(f"Total records: {total}")
     cleaned = [r for r in records if not record_is_empty(r)]
 
     # Remove dupes
     cleaned = [json.loads(j) for j in {json.dumps(d) for d in cleaned}]
+    print(f"After removing duplicates: {len(cleaned)}")
 
     cleaned, removed_missing_name = remove_missing_name_records(cleaned)
-
-    if removed_missing_name:
-        print(f"Removed {removed_missing_name} records missing personal_info.name")
+    print(f"Removed {removed_missing_name} records missing names")
 
     cleaned, removed_missing_school = remove_missing_school(cleaned)
-
-    if removed_missing_school:
-        print(f"Removed {removed_missing_school} records missing institution.name")
-
-    # Need to still find GPA's and years of experience
-
-
+    print(f"Removed {removed_missing_school} records missing school info")
 
     kept = len(cleaned)
+    print(f"Final cleaned records: {kept}")
 
+    # Save cleaned records
     with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
         json_file.write("")
         json.dump(cleaned, json_file, indent=2)
 
+    from DataCreation.ollama_utils import select_models
 
-    print("Cleaned resumes:", kept)
 
 
+    # Resume scoring with multiple models
     a = input("Do you want to proceed to resume scoring? (y/n): ")
     if a.lower() == 'y':
-        print("Starting resume scoring...")
-        results = []# Call your resume scoring function here
-        print(f"Completed! Processed {len(results)} resumes.")
-
-        filename = "data\\scored_resumes.json"
-        f = open(filename, "w+")
-        f.close()
-        pd.DataFrame(results).to_csv(base / "data\\scored_resumes.json", index=False)
-
-    a = input("Do you want to proceed to demographic prediction? (y/n): ")
-    if a.lower() == 'y':
-        print("Starting demographic prediction...")
-        results = predict_demographics()
-        print(f"Completed! Processed {len(results)} resumes.")
-
-        filename = "data\\predicted_demographics.csv"
-        f = open(filename, "w+")
-        f.close()
-        pd.DataFrame(results).to_csv(base / "data\\predicted_demographics.csv", index=False)
-    
-    a = input("Do you want to proceed to experience and education extraction? (y/n): ")
-    if a.lower() == 'y':
-        print("Starting experience and education extraction...")
-        results = [] # Call your experience and education extraction function here
-        print(f"Completed! Processed {len(results)} resumes.")
-
-        filename = "data\\experience_education_extraction.csv"
-        f = open(filename, "w+")
-        f.close()
-        pd.DataFrame(results).to_csv(base / "data\\experience_education_extraction.csv", index=False)
-
-    print("Joining csv data...")
-    results = join_csv_data()
-    print(f"Completed! Processed {len(results)} resumes.")
-
-    filename = "data\\joined_resumes.csv"
-    f = open(filename, "w+")
-    f.close()
-    pd.DataFrame(results).to_csv(base / "data\\joined_resumes.csv", index=False)
-
-def join_csv_data() -> pd.DataFrame:
-    base = Path(__file__).resolve().parent
-    scored = pd.read_csv(base / "data\\scored_resumes.json")
-    demographics = pd.read_csv(base / "data\\predicted_demographics.csv")
-    experience_education = pd.read_csv(base / "data\\experience_education_extraction.csv")
-
-    joined = pd.DataFrame()
-    joined = pd.concat([scored, demographics, experience_education], axis=1).reindex(scored.index)
-
-    return joined
-
+        print("\nStarting resume scoring...")
+        
+        # Let user select which models to use
+        selected_models = select_models()
+        if not selected_models:
+            print("No models selected. Skipping resume scoring.")
+        else:
+            print(f"\nScoring resumes using models: {', '.join(selected_models)}")
+            # Score resumes with each selected model
+            for model in selected_models:
+                print(f"\nProcessing with model: {model}")
+                
+                filename = f"data\\scored_resumes_{model}.csv"
+                output_path = base / filename
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                results = score(model=model)
+                # Ensure results is a DataFrame with a name column
+                if not isinstance(results, pd.DataFrame):
+                    results = pd.DataFrame(results)
+                if 'name' not in results.columns and 'personal_info' in cleaned[0]:
+                    results['name'] = [r['personal_info']['name'] for r in cleaned]
+                results = results.join(predict_demographics(model=model), how='left')
+                results = results.join(predict_prestige(model=model), how='left')
+                results = results.join(predict_experience(model=model), how='left')
+                
+                results.to_csv(output_path, index=False)
+                print(f"Saved scores for {model} to {filename}")
 
 if __name__ == "__main__":
     main()

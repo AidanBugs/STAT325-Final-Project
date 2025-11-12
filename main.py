@@ -1,10 +1,12 @@
 import json
 from pathlib import Path
 from typing import Any
-from DataCreation.gender import predict_demographics
-from DataCreation.resume_scorer import score
-from DataCreation.prestige import predict_prestige
-from DataCreation.experience import predict_experience
+from DataCreation.gender import predict_demographics_concurrent
+import asyncio
+from DataCreation.resume_scorer import score_resumes_concurrent
+from DataCreation.prestige import predict_prestige_concurrent
+from DataCreation.experience import get_experience
+from DataCreation.ollama_utils import select_models
 import pandas as pd
 import numpy as np
 
@@ -124,7 +126,7 @@ def remove_missing_school(records: list) -> tuple:
 
 
 
-def main():
+async def main():
     np.random.seed(42)
     base = Path(__file__).resolve().parent
     src = base / "data\\resumes.jsonl"
@@ -150,13 +152,22 @@ def main():
     kept = len(cleaned)
     print(f"Final cleaned records: {kept}")
 
-    # Save cleaned records
-    with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
-        json_file.write("")
-        json.dump(cleaned, json_file, indent=2)
+    
 
-    from DataCreation.ollama_utils import select_models
-
+    # Create subset for testing
+    a = input("Do you want to create a small test subset? (y/n): ")
+    if a.lower() == 'y':
+        print("\nCreating small test subset...")
+        subset = np.random.choice(cleaned, size=10, replace=False)
+        with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
+            json_file.write("")
+            json.dump(list(subset), json_file, indent=2)
+        print("Subset created successfully.")
+    else:
+        print("Skipping subset creation.")
+        with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
+            json_file.write("")
+            json.dump(cleaned, json_file, indent=2)
 
 
     # Resume scoring with multiple models
@@ -178,18 +189,29 @@ def main():
                 output_path = base / filename
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 
-                results = score(model=model)
+                # results = score(model=model, client=client, local=True)
+                results = await score_resumes_concurrent(model=model, local=True)
+
+                print(results.head())
                 # Ensure results is a DataFrame with a name column
                 if not isinstance(results, pd.DataFrame):
                     results = pd.DataFrame(results)
                 if 'name' not in results.columns and 'personal_info' in cleaned[0]:
                     results['name'] = [r['personal_info']['name'] for r in cleaned]
-                results = results.join(predict_demographics(model=model), how='left')
-                results = results.join(predict_prestige(model=model), how='left')
-                results = results.join(predict_experience(model=model), how='left')
+                demographics = await predict_demographics_concurrent(model=model, local=True)
+
+                print(demographics.head())
+                # results = results.join(await predict_demographics_concurrent(model=model, local=True), how='left')
+                
+                prestige = await predict_prestige_concurrent(model=model, local=True)
+                print(prestige.head())
+                # results = results.join(await predict_prestige_concurrent(model=model, local=True), how='left')
+                
+                print(get_experience().head())
+                # results = results.join(get_experience(), how='left')
                 
                 results.to_csv(output_path, index=False)
                 print(f"Saved scores for {model} to {filename}")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

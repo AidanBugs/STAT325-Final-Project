@@ -6,7 +6,7 @@ load_dotenv()
 from groq import Groq
 
 import time
-
+import asyncio
 import ollama
 
 def fetch_api_chat_completion(query, model="llama-3.3-70b-versatile", attempt=1) -> str:
@@ -39,24 +39,35 @@ def fetch_api_chat_completion(query, model="llama-3.3-70b-versatile", attempt=1)
         return fetch_api_chat_completion(query, model=model, attempt=attempt + 1)
 
 
-def fetch_chat_completion(query, model=None, local=True) -> str:
+async def fetch_chat_completion(query, model=None, client=None, local=True) -> str:
+    if client is None:
+        client = create_ollama_client(local=local)
     if not local:
-        return fetch_api_chat_completion(query, model=model)
+        return fetch_api_chat_completion(query, model=model, client=client)
     else:
-        return fetch_local_model_completion(query, model=model)
+        return await fetch_local_model_completion(query, model=model, client=client)
 
+def create_ollama_client(local=True):
+    if not local:
+        return Groq(api_key=os.getenv("GROQ_API_KEY"))
+    else:
+        return ollama.AsyncClient()
 
-def fetch_local_model_completion(query, model="llama2") -> str:
+async def fetch_local_model_completion(query, model="llama2", client=None) -> str:
+    if client is not None:
+        client = client
+    else:
+        client = ollama.AsyncClient()
     if model is None:
         model = "mistral:7b-instruct"
     try:
-        result = ollama.generate(model=model, prompt=query)
+        response = await client.chat(model=model, messages=[{"role": "user", "content": query}], stream=False)
     except Exception as e:
         print(f"Local model call failed with error: {e}")
         print("Waiting 10 seconds before retrying...")
         time.sleep(10)
         result = ollama.generate(model=model, prompt=query)
-    return result['response']
+    return response["message"]["content"]
 
 if __name__ == '__main__':
     test_query = "What is the capital of France?"

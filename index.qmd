@@ -5,20 +5,20 @@ title-block-banner: true
 execute:
   echo: false
 format: 
-  html:
-    toc: true
   pdf: 
+    toc: true
+  html:
     toc: true
 website:
   favicon: "images\\CWRU.jpg"
 ---
 
 # 0 Data / Code Updates
-Currently for the data processing/creating steps I currently have a predicted gender / ethnicity columns (works for subset of data still need to run for the entire dataset). I am currently working on the institutional bias portion of the project where determining the prestiege level of the institutions in the data set. Currently debating on how I obtain the resume scores for the data set. Specifically, debating if I should use reseume screeners online or use different LLM's to score the resumes. 
+
 
 # 1 Introduction
 ## 1.1 Context and Background
-Resume screeners were developed in order to screen canidates more efficiently and reduce the human bias in the screening process. However, there are concerns with whether or not these automated resume screening systems are truly unbiased in thier decision making process. As more and more companies use some form of AI automation in their hiring process, the question of whether or not these systems are unbiased has become more important. 
+Resume screeners were developed in order to screen canidates more efficiently and reduce the human bias in the screening process. However, there are concerns with whether or not these automated resume screening systems are truly unbiased in their decision making process. As more and more companies use some form of AI automation in their hiring process, the question of whether or not these systems are unbiased has become more important. 
 
 According to Naveen Kumar in his article on AI recruitment statistics, roughly 87% of companies are using AI in the hiring and recruitment process[^NaveenKumar]. As such, the University of Washington decided to conduct their own study to determine if there is any bias in the decision making process of resume screeners and what sorts of factors contribute to the scoring process of a resume. Their research found "significant racial, gender and intersectional bias in how three state-of-the-art large language models, or LLMs, ranked resumes. The researchers varied names associated with white and Black men and women across over 550 real-world resumes and found the LLMs favored white-associated names 85% of the time, female-associated names only 11% of the time, and never favored Black male-associated names over white male-associated names"[^Washington]. Their research came to these conclusions by handing the AI a list of identical resumes with different names and then having the AI give them scores. The article ends with the research team noting that more research should be done in this area by looking at different attributes and more LLMs in order to better allign these AI systems with the real world policies to reduce bias and harm.
 

@@ -7,22 +7,42 @@ def load_resumes():
     with open('data/cleaned_resumes.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
-def predict_experience(model=None, local=True) -> pd.DataFrame:
+def get_experience() -> pd.DataFrame:
+    """Calculate total years of experience from experience entries in resumes.
+    
+    Returns a DataFrame with columns 'name' and 'years_experience'.
+    """
     resumes = load_resumes()
-    results = pd.DataFrame()
+    results = []
 
-    for idx, resume in enumerate(resumes):
-        name = resume['personal_info']["name"]
-        print(f"Finding Years of Experience for resume {idx + 1}/{len(resumes)}: {name}")
-
-        prompt = f'''Find the years of relevant experience for the following resume that applies to this software company. Return only the integer years of experience without any additional text.
-        Resume: {resume['resume']}'''
-
+    for resume in resumes:
         try:
-            response = fetch_chat_completion(query=str(prompt), model=model, local=local)
-            score = int(response)
-            results = pd.concat([results, pd.DataFrame({'name': [name], 'years_relevant_experience': [score]})], ignore_index=True)
+            name = resume['personal_info']['name']
+            total_years = 0
+            
+            if 'experience' in resume and isinstance(resume['experience'], list):
+                for exp in resume['experience']:
+                    if isinstance(exp, dict) and 'dates' in exp:
+                        dates = exp['dates']
+                        if isinstance(dates, dict) and 'start' in dates and 'end' in dates:
+                            try:
+                                start_year = float(dates['start'].split('-')[0])
+                                end_year = float(dates['end'].split('-')[0])
+                                if start_year and end_year and start_year <= end_year:  # validate years
+                                    total_years += end_year - start_year
+                                start_month = float(dates['start'].split('-')[1])
+                                end_month = float(dates['end'].split('-')[1])
+                                if start_month and end_month and start_month <= end_month:  # validate months
+                                    total_years += (end_month - start_month) / 12.0
+                            except (ValueError, TypeError):
+                                # Skip entries with invalid year formats
+                                continue
+            
+            results.append({
+                'name': name,
+                'years_experience': round(total_years, 1)  # round to 1 decimal place
+            })
         except Exception as e:
-            print(f"Error scoring resume {idx + 1}: {e}")
-
-    return results
+            print(f"Error processing resume for {resume.get('personal_info', {}).get('name', 'Unknown')}: {e}")
+    
+    return pd.DataFrame(results)

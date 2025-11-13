@@ -46,7 +46,10 @@ async def score_resumes_concurrent(model=None, local=True, max_concurrent=5):
     client = create_ollama_client(local=local)
     
     print("Starting concurrent resume scoring...")
-    async def process_single_resume(resume):
+    async def process_single_resume(resume, count=0):
+        if count > 2:
+            print(f"Maximum retry attempts reached for resume {resume['personal_info']['name']}. Skipping...")
+            return None
         async with semaphore:
             name = resume['personal_info']['name']
             
@@ -64,7 +67,7 @@ async def score_resumes_concurrent(model=None, local=True, max_concurrent=5):
                 return {'name': name, 'score': score}
             except Exception as e:
                 print(f"Error scoring resume {name}: {e}")
-                return None
+                return process_single_resume(resume, count=count+1)
     
     # Process all resumes concurrently
     tasks = [process_single_resume(resume) for resume in resumes]

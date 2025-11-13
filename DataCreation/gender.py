@@ -55,7 +55,10 @@ async def predict_demographics_concurrent(model=None, local=True, client=None, m
     sepharate = asyncio.Semaphore(max_concurrent)
 
     print("Starting concurrent demographic prediction...")
-    async def process_batch_resume(batch):
+    async def process_batch_resume(batch, count=0):
+        if count > 2:
+            print("Maximum retry attempts reached for this batch. Skipping...")
+            return pd.DataFrame(columns=['name', 'gender', 'ethnicity'])
         async with sepharate:
             names = [resume['personal_info']['name'] for resume in batch]
 
@@ -79,6 +82,7 @@ async def predict_demographics_concurrent(model=None, local=True, client=None, m
                 return predictions
             except Exception as e:
                 print(f"Error processing batch starting at index: {str(e)}")
+                return await process_batch_resume(batch, count=count+1)
     
     batch_size = 5
     tasks = [process_batch_resume(resumes[i:i + batch_size]) for i in range(0, len(resumes), batch_size)]

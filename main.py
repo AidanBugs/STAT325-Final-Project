@@ -125,18 +125,7 @@ def remove_missing_school(records: list) -> tuple:
     return kept, removed
 
 
-
-async def main():
-    np.random.seed(42)
-    base = Path(__file__).resolve().parent
-    src = base / "data\\resumes.jsonl"
-    if not src.exists():
-        print(f"resumes.jsonl not found at {src}")
-        return
-
-    records = list(load_jsonl(src))
-    total = len(records)
-    print(f"Total records: {total}")
+def clean_resumes(records: list) -> tuple:
     cleaned = [r for r in records if not record_is_empty(r)]
 
     # Remove dupes
@@ -151,33 +140,38 @@ async def main():
 
     kept = len(cleaned)
     print(f"Final cleaned records: {kept}")
+    return cleaned
 
-    
 
-    # Create subset for testing
-    a = input("Do you want to create a small test subset? (y/n): ")
-    if a.lower() == 'y':
-        print("\nCreating small test subset...")
-        subset = np.random.choice(cleaned, size=10, replace=False)
-        with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
-            json_file.write("")
-            json.dump(list(subset), json_file, indent=2)
-        print("Subset created successfully.")
-        add = "subset"
-    else:
-        print("Skipping subset creation.")
-        with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
+
+async def main():
+    np.random.seed(42)
+    base = Path(__file__).resolve().parent
+    src = base / "data\\resumes.jsonl"
+    if not src.exists():
+        print(f"resumes.jsonl not found at {src}")
+        return
+
+    records = list(load_jsonl(src))
+    total = len(records)
+    print(f"Total records: {total}")
+
+    record_path = base / "data\\ready_resumes.json"
+    if not record_path.exists():
+        cleaned = clean_resumes(records)
+        print("Writing cleaned resumes to data/ready_resumes.json")
+
+        with open("data\\ready_resumes.json", "w", encoding="utf-8") as json_file:
             json_file.write("")
             json.dump(cleaned, json_file, indent=2)
-        add = "full"
+    else:
+        with open(record_path, 'r', encoding='utf-8') as f:
+            cleaned = json.load(f)
+        print(f"Loaded cleaned resumes from {record_path}, total: {len(cleaned)}")
 
-
-    # Resume scoring with multiple models
     a = input("Do you want to proceed to resume scoring? (y/n): ")
     if a.lower() == 'y':
         print("\nStarting resume scoring...")
-        
-        # Let user select which models to use
         selected_models = select_models()
         if not selected_models:
             print("No models selected. Skipping resume scoring.")
@@ -186,22 +180,33 @@ async def main():
             # Score resumes with each selected model
             for model in selected_models:
                 print(f"\nProcessing with model: {model}")
-                
-                filename = f"data\\scored_resumes_{add}{"_"+model.replace(':', '_')}.csv"
+
+                filename = f"data\\scored_resumes_{model.replace(':', '_')}.csv"
                 output_path = base / filename
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 
+                a = input("Do you want to create a additive test subset (progress saves)? (y/n): ")
+                if a.lower() == 'y':
+                    print("\nCreating small test subset...")
+                    size = int(input("Enter the size of the subset: "))
+                    if output_path.exists():
+                        current = pd.read_csv(output_path).shape[0]
+                    else:
+                        current = 0
+                    subset = cleaned[current:current+size]
+                    with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
+                        json_file.write("")
+                        json.dump(list(subset), json_file, indent=2)
+                    print("Subset created successfully.")
+                else:
+                    print("Skipping subset creation.")
+                    with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
+                        json_file.write("")
+                        json.dump(cleaned, json_file, indent=2)
+
                 # results = score(model=model, client=client, local=True)
                 results = await score_resumes_concurrent(model=model, local=True)
-
-                # Ensure results is a DataFrame with a name column
-                if not isinstance(results, pd.DataFrame):
-                    results = pd.DataFrame(results)
-                if 'name' not in results.columns and 'personal_info' in cleaned[0]:
-                    results['name'] = [r['personal_info']['name'] for r in cleaned]
                 demographics = await predict_demographics_concurrent(model=model, local=True)
-
-                
                 prestige = await predict_prestige_concurrent(model=model, local=True)
                 
 
@@ -209,8 +214,18 @@ async def main():
                 results = results.merge(demographics, how='left', on='name')
                 results = results.merge(prestige, how='left', on='name')
                 results = results.merge(get_experience(), how='left', on='name')
+
+                if output_path.exists():
+                    a = input(f"Output file {filename} already exists. Do you want to append to it? (y/n): ")
+                    if a.lower() == 'y':
+                        print(f"Appending to existing file {filename}...")
+                        results.to_csv(output_path, mode='a', header=False, index=False)
+                    else: 
+                        results.to_csv(output_path, index=False)
+                else:
+                    print(f"Output file {filename} does not exist. Creating a new file...")
+                    results.to_csv(output_path, index=False)
                 
-                results.to_csv(output_path, index=False)
                 print(f"Saved scores for {model} to {filename}")
 
 if __name__ == "__main__":

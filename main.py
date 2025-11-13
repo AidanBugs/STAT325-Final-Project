@@ -163,11 +163,13 @@ async def main():
             json_file.write("")
             json.dump(list(subset), json_file, indent=2)
         print("Subset created successfully.")
+        add = "subset"
     else:
         print("Skipping subset creation.")
         with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
             json_file.write("")
             json.dump(cleaned, json_file, indent=2)
+        add = "full"
 
 
     # Resume scoring with multiple models
@@ -185,14 +187,13 @@ async def main():
             for model in selected_models:
                 print(f"\nProcessing with model: {model}")
                 
-                filename = f"data\\scored_resumes_{model}.csv"
+                filename = f"data\\scored_resumes_{add}{"_"+model.replace(':', '_')}.csv"
                 output_path = base / filename
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 
                 # results = score(model=model, client=client, local=True)
                 results = await score_resumes_concurrent(model=model, local=True)
 
-                print(results.head())
                 # Ensure results is a DataFrame with a name column
                 if not isinstance(results, pd.DataFrame):
                     results = pd.DataFrame(results)
@@ -200,15 +201,14 @@ async def main():
                     results['name'] = [r['personal_info']['name'] for r in cleaned]
                 demographics = await predict_demographics_concurrent(model=model, local=True)
 
-                print(demographics.head())
-                # results = results.join(await predict_demographics_concurrent(model=model, local=True), how='left')
                 
                 prestige = await predict_prestige_concurrent(model=model, local=True)
-                print(prestige.head())
-                # results = results.join(await predict_prestige_concurrent(model=model, local=True), how='left')
                 
-                print(get_experience().head())
-                # results = results.join(get_experience(), how='left')
+
+                print(f"Merging results...")
+                results = results.merge(demographics, how='left', on='name')
+                results = results.merge(prestige, how='left', on='name')
+                results = results.merge(get_experience(), how='left', on='name')
                 
                 results.to_csv(output_path, index=False)
                 print(f"Saved scores for {model} to {filename}")

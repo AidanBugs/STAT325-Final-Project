@@ -52,28 +52,33 @@ async def predict_prestige_concurrent(model=None, local=True, client=None, max_c
     results = pd.DataFrame(columns=['name', 'prestige'])
     sepharate = asyncio.Semaphore(max_concurrent) 
 
+    print("Starting concurrent prestige prediction...")
+
     async def process_batch_resume(batch):
         async with sepharate:
-            names = [resume['personal_info']['name'] +": "+ resume['education'][0]['institution']["name"]+" ("+resume["education"][0]["institution"]["location"] + ")" for resume in batch]
-            print(names)
+            names = [resume['personal_info']['name'] +"|"+ resume['education'][0]['institution']["name"]+"|"+resume["education"][0]["institution"]["location"] for resume in batch]
             # Create the prompt for the LLM
-            prompt = f'''For each institution in the following list, predict their likely prestige level (High/Medium/Low/Unknown). Format the response as CSV. Do not include any explanations or other information. Please use \"|\" as separators, DO NOT use commas. Each prediction should be only from the options provided. 
+            prompt = f'''For each institution in the following list, predict their likely prestige level (High/Medium/Low/Unknown). Format the response as CSV. Do not include any explanations or other information. Please use commas as separators. Each prediction should be only from the options provided. Do NOT add a header row.
         
-            DO NOT leave an answer as multiple choices. DO NOT leave ethnicity as "Unknown". You MUST provide a single answer for each name.
+            Input format: 
+            
+            Name|Institution|Location
+            John Doe|Illinois Institute of Technology|Chicago, IL
+            Kevin Diggs|Boston University|Boston, MA
+            Jane Kim|College of the Canyons|Los Angeles, CA
 
     Example format: 
 
-            Name|Institution|Prestige
-            John Doe|Illinois Institute of Technology|Medium
-            Kevin Diggs|Boston University|High
-            Jane Kim|College of the Canyons|Low
+            John Doe,Illinois Institute of Technology,Medium
+            Kevin Diggs,Boston University,High
+            Jane Kim,College of the Canyons,Low
         
             Names to analyze:
             {('\n'.join(names))}'''
         
             try:
                 response = await fetch_chat_completion(query=str(prompt), model=model, local=local, client=client)
-                predictions = pd.read_csv(io.StringIO(response), sep='|')
+                predictions = pd.read_csv(io.StringIO(response), sep=',', header=None)
                 return predictions
             except Exception as e:
                 print(f"Error processing batch starting at index: {str(e)}")
@@ -81,7 +86,9 @@ async def predict_prestige_concurrent(model=None, local=True, client=None, max_c
     batch_size = 5
 
     tasks = [process_batch_resume(resumes[i:i + batch_size]) for i in range(0, len(resumes), batch_size)]
-    results = pd.concat(await asyncio.gather(*tasks), ignore_index=True)
+    results = pd.concat(await asyncio.gather(*tasks), ignore_index=True, axis=0)
+
+    print(results.head())
 
     results.columns = ['name', 'institution',  'prestige']
 

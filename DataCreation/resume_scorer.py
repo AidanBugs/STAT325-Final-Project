@@ -45,10 +45,10 @@ async def score_resumes_concurrent(model=None, local=True, max_concurrent=5):
 
     client = create_ollama_client(local=local)
     
+    print("Starting concurrent resume scoring...")
     async def process_single_resume(resume):
         async with semaphore:
             name = resume['personal_info']['name']
-            print(f"Scoring resume: {name}")
             
             prompt = f'''Score the following resume on a scale of 1 to 100 based on if the candidate is a good fit for this software company. Provide only the score as an integer. Do not include any explanations or other information.
 

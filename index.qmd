@@ -1,20 +1,33 @@
 ---
 title: "Algorithmic Bias in AI Resume Screening"
-author: "Aidan Bugayong"
+author: 
+  name: "Aidan Bugayong"
+  affiliations:
+    name: "Department of Mathematics, Applied Mathematics, and Statistics, Case Western Reserve University"
+    city: "Cleveland"
+    state: "Ohio"
+date: "2025-11-14"
 title-block-banner: true
 execute:
   echo: false
+toc: true
 format: 
   pdf: 
-    toc: true
+    documentclass: report
+    geometry:
+      - top=30mm
+      - left=20mm
+      - right=20mm
+      - heightrounded
+    mainfont: Times New Roman
+    fontsize: 12pt
+    colorlinks: true
+    date-format: long
   html:
     toc: true
 website:
   favicon: "images\\CWRU.jpg"
 ---
-
-# 0 Data / Code Updates
-
 
 # 1 Introduction
 ## 1.1 Context and Background
@@ -27,8 +40,18 @@ This project aims to determine if there is any bias in the decision making proce
 
 # 2 Methods
 ## 2.1 Data Collection and Purpose
+The original list of resumes is from a dataset in huggingface[^huggingface], which is comprised of both real and synthetic resume data in JSON formatting. The purpose of this dataset was for training natural language processing (NLP) models for resume parsing. Specifically, the resumes are oriented around technical roles and is designed for NLP models to be trained on and used for candidate matching / screening in this field. This dataset was posted on huggingface Feburary 21st, 2025 and has not been updated since (excluding the minor changes to the readme).
+
+The sources used for this dataset are sourced from anonymized CV submissions as well as synthetiic resumes generated using "Faker Library" and filled with realistic and role appropriate information. All resumes are anonymized by removing PII (Personally Identifiable Information) but many fields (such as names) contain realistic placeholders. The makers of the dataset note that the data is oriented around technical roles and the synthetic resumes may not capture the same nuances of a real resume. As such, the makers note that this dataset should only be used for NLP, data augmentation, or exploratory data analysis and should not be used for non-technical roles or personalized hiring decisions.
+
+The dataset contains over 4500 resumes in a JSON format. Each resume entry contains personal information, work experience, education information, skills and projects. Since these are technical resumes (oriented around the computer science / information technology field), the skills and projects fields contained a candidate's coding projects and/or coding languages. For the scope of this project, all fields were used for analysis or scoring of the resume. 
 
 ## 2.2 Data Processing
+The collection of resumes was processed in order to create the score datasets used for this project. The score datasets has the following columns: Name (acting as the primary key), Resume Score, Gender, Ethnicity, Institutional Prestige, and Years of Experience. The score datasets are specific to each of the langauge models used in this project. This is because we are trying to understand the relation between how the model scores a reseume and the model's own perception of the candidate (gender, ethnicity, and institutional prestige).
+
+For creating the score datasets themselves, the resumes were scored by the model and then the model was asked to guess the gender, ethnicity, and institutional prestige of the candidate. All of this information was then used to create the score dataset for each of the models used in this project. 
+
+The models used for this project include IBM's *granite3.3:8b*, Deepseek's *deepseek-r1:8b*, Qwen's *qwen3:8b*, and Meta's *llama3.1:8b*. These models were choosen because they are highly rated models despite the lower paramter size and are all open source. 
 
 ## 2.3 Statistical Tools
 
@@ -41,3 +64,5 @@ This project aims to determine if there is any bias in the decision making proce
 [^NaveenKumar]: https://www.demandsage.com/ai-recruitment-statistics/
 
 [^Washington]: https://www.washington.edu/news/2024/10/31/ai-bias-resume-screening-race-gender/
+
+[^huggingface]: https://huggingface.co/datasets/datasetmaster/resumes

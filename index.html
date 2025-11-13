@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Aidan Bugayong">
+<meta name="dcterms.date" content="2025-11-14">
 
 <title>Algorithmic Bias in AI Resume Screening</title>
 <style>
@@ -47,16 +48,29 @@ ul.task-list li input[type="checkbox"] {
                       </div>
   </div>
     
-  
+  <div class="quarto-title-meta-author">
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-heading">Affiliation</div>
+    
+      <div class="quarto-title-meta-contents">
+      <p class="author">Aidan Bugayong </p>
+    </div>
+    <div class="quarto-title-meta-contents">
+          <p class="affiliation">
+              Department of Mathematics, Applied Mathematics, and Statistics, Case Western Reserve University
+            </p>
+        </div>
+    </div>
+
   <div class="quarto-title-meta">
 
+        
       <div>
-      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-               <p>Aidan Bugayong </p>
-            </div>
+        <p class="date">November 14, 2025</p>
+      </div>
     </div>
-      
     
       
     </div>
@@ -68,8 +82,7 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#data-code-updates" id="toc-data-code-updates" class="nav-link active" data-scroll-target="#data-code-updates">0 Data / Code Updates</a></li>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1 Introduction</a>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">1 Introduction</a>
   <ul class="collapse">
   <li><a href="#context-and-background" id="toc-context-and-background" class="nav-link" data-scroll-target="#context-and-background">1.1 Context and Background</a></li>
   <li><a href="#project-purpose" id="toc-project-purpose" class="nav-link" data-scroll-target="#project-purpose">1.2 Project Purpose</a></li>
@@ -92,15 +105,11 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="data-code-updates" class="level1">
-<h1>0 Data / Code Updates</h1>
-<p>Currently for the data processing/creating steps I currently have a predicted gender / ethnicity columns (works for subset of data still need to run for the entire dataset). I am currently working on the institutional bias portion of the project where determining the prestiege level of the institutions in the data set. Currently debating on how I obtain the resume scores for the data set. Specifically, debating if I should use reseume screeners online or use different LLM’s to score the resumes.</p>
-</section>
 <section id="introduction" class="level1">
 <h1>1 Introduction</h1>
 <section id="context-and-background" class="level2">
 <h2 class="anchored" data-anchor-id="context-and-background">1.1 Context and Background</h2>
-<p>Resume screeners were developed in order to screen canidates more efficiently and reduce the human bias in the screening process. However, there are concerns with whether or not these automated resume screening systems are truly unbiased in thier decision making process. As more and more companies use some form of AI automation in their hiring process, the question of whether or not these systems are unbiased has become more important.</p>
+<p>Resume screeners were developed in order to screen canidates more efficiently and reduce the human bias in the screening process. However, there are concerns with whether or not these automated resume screening systems are truly unbiased in their decision making process. As more and more companies use some form of AI automation in their hiring process, the question of whether or not these systems are unbiased has become more important.</p>
 <p>According to Naveen Kumar in his article on AI recruitment statistics, roughly 87% of companies are using AI in the hiring and recruitment process<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. As such, the University of Washington decided to conduct their own study to determine if there is any bias in the decision making process of resume screeners and what sorts of factors contribute to the scoring process of a resume. Their research found “significant racial, gender and intersectional bias in how three state-of-the-art large language models, or LLMs, ranked resumes. The researchers varied names associated with white and Black men and women across over 550 real-world resumes and found the LLMs favored white-associated names 85% of the time, female-associated names only 11% of the time, and never favored Black male-associated names over white male-associated names”<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. Their research came to these conclusions by handing the AI a list of identical resumes with different names and then having the AI give them scores. The article ends with the research team noting that more research should be done in this area by looking at different attributes and more LLMs in order to better allign these AI systems with the real world policies to reduce bias and harm.</p>
 </section>
 <section id="project-purpose" class="level2">
@@ -112,6 +121,9 @@ ul.task-list li input[type="checkbox"] {
 <h1>2 Methods</h1>
 <section id="data-collection-and-purpose" class="level2">
 <h2 class="anchored" data-anchor-id="data-collection-and-purpose">2.1 Data Collection and Purpose</h2>
+<p>The original list of resumes is from a dataset in huggingface<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>, which is comprised of both real and synthetic resume data in JSON formatting. The purpose of this dataset was for training natural language processing (NLP) models for resume parsing. Specifically, the resumes are oriented around technical roles and is designed for NLP models to be trained on and used for candidate matching / screening in this field. This dataset was posted on huggingface Feburary 21st, 2025 and has not been updated since (excluding the minor changes to the readme).</p>
+<p>The sources used for this dataset are sourced from anonymized CV submissions as well as synthetiic resumes generated using “Faker Library” and filled with realistic and role appropriate information. All resumes are anonymized by removing PII (Personally Identifiable Information) but many fields (such as names) contain realistic placeholders. The makers of the dataset note that the data is oriented around technical roles and the synthetic resumes may not capture the same nuances of a real resume. As such, the makers note that this dataset should only be used for NLP, data augmentation, or exploratory data analysis and should not be used for non-technical roles or personalized hiring decisions.</p>
+<p>The dataset contains over 4500 resumes in a JSON format. Each resume entry contains personal information, work experience, education information, skills and projects. Since these are technical resumes (oriented around the computer science / information technology field), the skills and projects fields contained a candidate’s coding projects and/or coding languages. For the scope of this project, all fields were used for analysis or scoring of the resume.</p>
 </section>
 <section id="data-processing" class="level2">
 <h2 class="anchored" data-anchor-id="data-processing">2.2 Data Processing</h2>
@@ -136,6 +148,7 @@ ul.task-list li input[type="checkbox"] {
 <ol>
 <li id="fn1"><p>https://www.demandsage.com/ai-recruitment-statistics/<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>https://www.washington.edu/news/2024/10/31/ai-bias-resume-screening-race-gender/<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>https://huggingface.co/datasets/datasetmaster/resumes<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></div></main>
 <!-- /main column -->

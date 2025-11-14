@@ -18,7 +18,6 @@ def predict_prestige(model=None, local=True, client=None) -> pd.DataFrame:
     for i in range(0, len(resumes), batch_size):
         batch = resumes[i:i + batch_size]
         names = [resume['personal_info']['name'] +": "+ resume['education'][0]['institution']["name"]+" ("+resume["education"][0]["institution"]["location"] + ")" for resume in batch]
-        print(names)
         # Create the prompt for the LLM
         prompt = f'''For each institution in the following list, predict their likely prestige level (High/Medium/Low/Unknown). Format the response as CSV. Do not include any explanations or other information. DO NOT use semicolons, use commas as separators. Each prediction should be only from the options provided. 
         
@@ -41,6 +40,7 @@ Example format:
             print(f"Processed {len(results)} names so far...")
         except Exception as e:
             print(f"Error processing batch starting at index {i}: {str(e)}")
+            print(response)
     
     return results
 
@@ -55,9 +55,6 @@ async def predict_prestige_concurrent(model=None, local=True, client=None, max_c
     print("Starting concurrent prestige prediction...")
 
     async def process_batch_resume(batch, count=0):
-        if count > 2:
-            print("Maximum retry attempts reached for this batch. Skipping...")
-            return pd.DataFrame(columns=['name', 'institution', 'prestige'])
         async with sepharate:
             names = [resume['personal_info']['name'] +"|"+ resume['education'][0]['institution']["name"]+"|"+resume["education"][0]["institution"]["location"] for resume in batch]
             # Create the prompt for the LLM
@@ -81,10 +78,16 @@ async def predict_prestige_concurrent(model=None, local=True, client=None, max_c
         
             try:
                 response = await fetch_chat_completion(query=str(prompt), model=model, local=local, client=client)
-                print(response)
-                predictions = pd.read_csv(io.StringIO(response), sep=';', header=None)
+                predictions = pd.read_csv(io.StringIO(response), sep=';', header=None, names=["name", "institution", "prestige"])
+
+                if (predictions.shape[0] != len(names)): 
+                    raise ValueError("Didnt return all names")
+                if count > 0:
+                    print("Fixed Error")
                 return predictions
             except Exception as e:
+                if count > 4:
+                    raise ValueError(str(e))
                 print(f"Error processing batch starting at index: {str(e)}")
                 print(f"Trying again for the same batch...")
                 return await process_batch_resume(batch, count=count+1)
@@ -94,7 +97,6 @@ async def predict_prestige_concurrent(model=None, local=True, client=None, max_c
     tasks = [process_batch_resume(resumes[i:i + batch_size]) for i in range(0, len(resumes), batch_size)]
     results = pd.concat(await asyncio.gather(*tasks), ignore_index=True, axis=0)
 
-    print(results.head())
 
     results.columns = ['name', 'institution',  'prestige']
 

@@ -56,9 +56,6 @@ async def predict_demographics_concurrent(model=None, local=True, client=None, m
 
     print("Starting concurrent demographic prediction...")
     async def process_batch_resume(batch, count=0):
-        if count > 2:
-            print("Maximum retry attempts reached for this batch. Skipping...")
-            return pd.DataFrame(columns=['name', 'gender', 'ethnicity'])
         async with sepharate:
             names = [resume['personal_info']['name'] for resume in batch]
 
@@ -79,8 +76,14 @@ async def predict_demographics_concurrent(model=None, local=True, client=None, m
             try:
                 response = await fetch_chat_completion(query=str(prompt), model=model, local=local)
                 predictions = pd.read_csv(io.StringIO(response), sep=',', header=None, names=['name', 'gender', 'ethnicity'])
+                if (predictions.shape[0] != len(names)): 
+                    raise ValueError("Didnt return all names")
+                if count > 0:
+                    print("Fixed Error")
                 return predictions
             except Exception as e:
+                if count > 4:
+                    raise ValueError(e)
                 print(f"Error processing batch starting at index: {str(e)}")
                 return await process_batch_resume(batch, count=count+1)
     
@@ -90,7 +93,6 @@ async def predict_demographics_concurrent(model=None, local=True, client=None, m
     predictions = await asyncio.gather(*tasks)
 
     results = pd.concat(predictions, ignore_index=True, axis=0)
-    print(results.head())
     results.columns = ['name', 'gender', 'ethnicity']
 
     return results

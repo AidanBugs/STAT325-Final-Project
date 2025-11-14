@@ -6,6 +6,9 @@ import asyncio
 from DataCreation.resume_scorer import score_resumes_concurrent
 from DataCreation.prestige import predict_prestige_concurrent
 from DataCreation.experience import get_experience
+from DataCreation.experience import score_experience_concurrent
+from DataCreation.skills import score_skills_concurrent
+from DataCreation.projects import score_projects_concurrent
 from DataCreation.ollama_utils import select_models
 import pandas as pd
 import numpy as np
@@ -59,6 +62,21 @@ def load_jsonl(path: Path):
                 # Show which line failed to parse and continue
                 print(f"Warning: failed to parse JSON on line {i}: {e}")
 
+
+def remove_missing_skills_projects_records(records: list) -> tuple:
+    kept = []
+    removed = 0
+    for rec in records:
+        sk = rec.get('skills') if isinstance(rec, dict) else None
+        if not isinstance(sk, dict):
+            removed += 1
+            continue
+        pr = rec.get('projects') if isinstance(rec, dict) else None
+        if not isinstance(pr, list):
+            removed += 1
+            continue
+        kept.append(rec)
+    return kept, removed
 
 def remove_missing_name_records(records: list) -> tuple:
     kept = []
@@ -138,6 +156,9 @@ def clean_resumes(records: list) -> tuple:
     cleaned, removed_missing_school = remove_missing_school(cleaned)
     print(f"Removed {removed_missing_school} records missing school info")
 
+    cleaned, removed_missing_skills = remove_missing_skills_projects_records(cleaned)
+    print(f"Removed {removed_missing_skills} records missing skills or project info")
+
     kept = len(cleaned)
     print(f"Final cleaned records: {kept}")
     return cleaned
@@ -169,7 +190,12 @@ async def main():
             cleaned = json.load(f)
         print(f"Loaded cleaned resumes from {record_path}, total: {len(cleaned)}")
 
-    a = input("Do you want to proceed to resume scoring? (y/n): ")
+    sub = input("Do you want to create a smaller subset (progress saved)? (y/n): ")
+    if sub.lower() == 'y':
+        size = int(input("Enter the size of the subset: "))
+    else:
+        size = len(cleaned)
+    a = 'y'
     if a.lower() == 'y':
         print("\nStarting resume scoring...")
         selected_models = select_models()
@@ -181,47 +207,41 @@ async def main():
             for model in selected_models:
                 print(f"\nProcessing with model: {model}")
 
-                filename = f"data\\scored_resumes_{model.replace(':', '_')}.csv"
+                filename = f"data\\{model.replace(':', '_')}_resume_scores.csv"
                 output_path = base / filename
                 output_path.parent.mkdir(parents=True, exist_ok=True)
-                
-                a = input("Do you want to create a additive test subset (progress saves)? (y/n): ")
-                if a.lower() == 'y':
-                    print("\nCreating small test subset...")
-                    size = int(input("Enter the size of the subset: "))
-                    if output_path.exists():
-                        current = pd.read_csv(output_path).shape[0]
-                    else:
-                        current = 0
-                    subset = cleaned[current:current+size]
-                    with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
-                        json_file.write("")
-                        json.dump(list(subset), json_file, indent=2)
-                    print("Subset created successfully.")
-                else:
-                    print("Skipping subset creation.")
-                    with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
-                        json_file.write("")
-                        json.dump(cleaned, json_file, indent=2)
 
-                # results = score(model=model, client=client, local=True)
-                results = await score_resumes_concurrent(model=model, local=True)
-                demographics = await predict_demographics_concurrent(model=model, local=True)
-                prestige = await predict_prestige_concurrent(model=model, local=True)
+                if output_path.exists():
+                    current = pd.read_csv(output_path).shape[0]
+                else:
+                    current = 0
+                subset = cleaned[current:current+size]
+                
+                with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
+                    json_file.write("")
+                    json.dump(list(subset), json_file, indent=2)
+                print("Resumes to score saved successfully.")
+
+                max_concurrent = 14
+                results = await score_resumes_concurrent(model=model, local=True, max_concurrent=max_concurrent)
+                demographics = await predict_demographics_concurrent(model=model, local=True, max_concurrent=max_concurrent)
+                prestige = await predict_prestige_concurrent(model=model, local=True, max_concurrent=max_concurrent)
+                skills = await score_skills_concurrent(model=model, local=True, max_concurrent=max_concurrent)
+                projects = await score_projects_concurrent(model=model, local=True, max_concurrent=max_concurrent)
+                exp = await score_experience_concurrent(model=model, local=True, max_concurrent=max_concurrent)
                 
 
                 print(f"Merging results...")
                 results = results.merge(demographics, how='left', on='name')
                 results = results.merge(prestige, how='left', on='name')
+                results = results.merge(skills, how='left', on='name')
+                results = results.merge(projects, how='left', on='name')
+                results = results.merge(exp, how='left', on='name')
                 results = results.merge(get_experience(), how='left', on='name')
 
                 if output_path.exists():
-                    a = input(f"Output file {filename} already exists. Do you want to append to it? (y/n): ")
-                    if a.lower() == 'y':
-                        print(f"Appending to existing file {filename}...")
-                        results.to_csv(output_path, mode='a', header=False, index=False)
-                    else: 
-                        results.to_csv(output_path, index=False)
+                    print(f"Appending to existing file {filename}...")
+                    results.to_csv(output_path, mode='a', header=False, index=False)
                 else:
                     print(f"Output file {filename} does not exist. Creating a new file...")
                     results.to_csv(output_path, index=False)

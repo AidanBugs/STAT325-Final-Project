@@ -39,7 +39,7 @@ async def score_projects_concurrent(model=None, local=True, max_concurrent=5):
                     print(f"Fixed Error {name}")
                 return {'name': name, 'project_score': score}
             except Exception as e:
-                if count > 4:
+                if count > 10:
                     raise ValueError(e)
                 print(f"Error scoring resume {name}: {e}")
                 return await process_single_resume(resume, count=count+1)

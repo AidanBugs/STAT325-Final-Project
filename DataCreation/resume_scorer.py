@@ -22,7 +22,7 @@ def score(model=None, local=True, client=None) -> pd.DataFrame:
 
         prompt = f'''[{load_job_desction()}]
         
-        Score the following resume on a scale of 1 to 100 based on if the candidate is a good fit for the job description above at SOFTWARE COMPANY. Provide only the score as an integer. Do not include any explanations or other information.INCLUDING EXTRA INFORMATION WILL BREAK THE CSV FORMAT AND WILL CAUSE ERROR DO NOT DEVIATE FROM THE EXAMPLE FORMAT.
+        Score the following resume on a scale of 1 to 100 based on if the candidate is a good fit for this software company. Provide only the score as an integer. DO NOT include any explanations or other information. INCLUDING EXTRA INFORMATION WILL BREAK THE CSV FORMAT AND WILL CAUSE ERROR DO NOT DEVIATE FROM THE EXAMPLE FORMAT. PLEASE PLEASE PLEASE DO NOT INCLUDE ```` OR ANY EXTRA CHARACTERS
 
         Example Output format:
 
@@ -72,7 +72,7 @@ async def score_resumes_concurrent(model=None, local=True, max_concurrent=5):
                     print(f"Fixed Error {name}")
                 return {'name': name, 'score': score}
             except Exception as e:
-                if count > 4:
+                if count > 10:
                     raise ValueError(e)
                 print(f"Error scoring resume {name}: {e}")
                 return await process_single_resume(resume, count=count+1)

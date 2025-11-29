@@ -35,7 +35,7 @@ Example format:
         Jane Kim,Female,Asian
         
         Names to analyze:
-        {'\n'.join(names)}'''
+        {chr(10).join(names)}'''
         
         try:
             response = fetch_chat_completion(query=str(prompt), model=model, local=local)
@@ -70,7 +70,7 @@ async def predict_demographics_concurrent(model=None, local=True, client=None, m
             Jane Kim,Female,Asian
         
             Names to analyze:
-            {'\n'.join(names)}'''
+            {chr(10).join(names)}'''
 
 
             try:
@@ -82,7 +82,7 @@ async def predict_demographics_concurrent(model=None, local=True, client=None, m
                     print("Fixed Error")
                 return predictions
             except Exception as e:
-                if count > 4:
+                if count > 10:
                     raise ValueError(e)
                 print(f"Error processing batch starting at index: {str(e)}")
                 return await process_batch_resume(batch, count=count+1)

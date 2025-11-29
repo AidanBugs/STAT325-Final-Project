@@ -195,15 +195,19 @@ async def main():
         size = int(input("Enter the size of the subset: "))
     else:
         size = len(cleaned)
-    a = 'y'
-    if a.lower() == 'y':
-        print("\nStarting resume scoring...")
-        selected_models = select_models()
-        if not selected_models:
-            print("No models selected. Skipping resume scoring.")
-        else:
-            print(f"\nScoring resumes using models: {', '.join(selected_models)}")
-            # Score resumes with each selected model
+    print("\nStarting resume scoring...")
+    selected_models = select_models()
+    if not selected_models:
+        print("No models selected. Skipping resume scoring.")
+    else:
+        print(f"\nScoring resumes using models: {', '.join(selected_models)}")
+        # Score resumes with each selected model
+        batch = 0
+        batch_size = 25
+        for _ in range(0,size,25):
+            batch+= 1
+            print(f"Starting batch {batch} of {int(size/25)+1}")
+
             for model in selected_models:
                 print(f"\nProcessing with model: {model}")
 
@@ -215,7 +219,7 @@ async def main():
                     current = pd.read_csv(output_path).shape[0]
                 else:
                     current = 0
-                subset = cleaned[current:current+size]
+                subset = cleaned[current:current+50]
                 
                 with open("data\\cleaned_resumes.json", "w", encoding="utf-8") as json_file:
                     json_file.write("")

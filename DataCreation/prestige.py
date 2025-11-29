@@ -31,7 +31,7 @@ Example format:
         Jane Kim,College of the Canyons,Low
         
         Names to analyze:
-        {('\n'.join(names))}'''
+        {(chr(10).join(names))}'''
         
         try:
             response = fetch_chat_completion(query=str(prompt), model=model, local=local, client=client)
@@ -74,7 +74,7 @@ async def predict_prestige_concurrent(model=None, local=True, client=None, max_c
             Jane Kim;College of the Canyons;Low
         
             Names to analyze:
-            {('\n'.join(names))}'''
+            {(chr(10).join(names))}'''
         
             try:
                 response = await fetch_chat_completion(query=str(prompt), model=model, local=local, client=client)
@@ -86,7 +86,7 @@ async def predict_prestige_concurrent(model=None, local=True, client=None, max_c
                     print("Fixed Error")
                 return predictions
             except Exception as e:
-                if count > 4:
+                if count > 10:
                     raise ValueError(str(e))
                 print(f"Error processing batch starting at index: {str(e)}")
                 print(f"Trying again for the same batch...")

@@ -143,16 +143,22 @@ The models used for this project include IBM's *granite3.3:8b*, Microsoft's *Phi
 
 ## 2.3 Statistical Tools and Approach
 ### 2.3a Exploratory Data Analysis
-Before 
+After the resumes have been processed by the language models, there was some data cleaning to ensure the models followed the instructions. Once the data has been cleaned, exploratory data analysis was conducted to get a better understanding of the data distributions and relationships. Pi charts were used to show the distribution of the categorical variables and histograms were used to show the distribution of the numeric variables for each of the datasets (IBM, Microsoft, and Meta).
 
 ### 2.3b Initial Modeling Approach
-The initial approach was to use linear regression to predict the resume score from all of the other variables in the dataset. The formula used for this model was: `score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience`. Here, the response variable is the resume score which are integers in the range 0-100. The categorical variables are: gender, ethnicity, and prestige. The numeric variables are: years of experience, skill score, project score, and experience score.
+The initial approach was to use linear regression to predict the resume score from all of the other variables in the dataset. The formula used for this model was: `score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience`. Here, the response variable is the resume score which are integers in the range 0-100. The categorical variables are: gender, ethnicity, and prestige. The numeric variables are: years of experience, skill score, project score, and experience score. All categorical variables were setup such that "Unknown" was the reference category. The numeric variables, like the resume score, are in range 0-100.
 
 ### 2.3c Model Diagnostics 
+This is where there was analysis of interation effects and determining if any interactions were considered statistically significant. If the interaction was considered significant, then the interaction was added to the model. Additionally, the model diagnostics were conducted to ensure that the model's assumptions were met. Specifically, the model was checked for normality, homoscedasticity, and multicollinearity by using the Shapiro-Wilk test, Browne-Forsythe test, and variance inflation factor, respectively.
 
 ### 2.3d Model Refinement
+Here, interaction effects were added to the model if they were statistically significant. Due to multicolinearity issues, the model used a ridge regression. 
 
 # 3 Results and Discussion
+
+> Note that the results are not final and are subject to change. Additionally, the format will be updated 
+
+## 3.1 Data Exploration
 ```{python}
 import statsmodels.formula.api as smf
 import scipy.stats as stats
@@ -161,16 +167,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-#| fig-cap: "Histogram of Scores"
-
-# Set plotting style
 plt.style.use('bmh')
-# sns.set_palette("husl")
-
-# =============================================================================
-# SECTION 1: DATA LOADING AND PREPROCESSING
-# =============================================================================
-
 def load_and_clean_data():
     datasets = {}
     
@@ -280,35 +277,16 @@ for cat_var in categorical_vars:
     plt.tight_layout()
     plt.show()
 
-'''
-# Generate covariance matrices for each dataset
-for name, df in datasets.items():
-    # Select numeric columns for covariance
-    numeric_cols = df.select_dtypes(include=[np.number]).columns
-    cov_matrix = df[numeric_cols].cov()
-    # Visualize covariance matrix as heatmap
-    fig, ax = plt.subplots(figsize=(10, 8))
-    sns.heatmap(cov_matrix, annot=True, fmt='.2f', cmap='coolwarm', center=0, 
-                square=True, linewidths=1, cbar_kws={"shrink": 0.8}, ax=ax)
-    ax.set_title(f'Covariance Matrix - {name.title()}', fontsize=14, fontweight='bold')
-    plt.tight_layout()
-    plt.show()
-'''
 ```
 
+## 3.2 Initial Model Development
+
 ```{python}
-# =============================================================================
-# SECTION 2: INITIAL MODEL DEVELOPMENT
-# =============================================================================
-
-print("\nSECTION 2: INITIAL MODEL DEVELOPMENT")
-print("=" * 50)
-
 def create_initial_models(datasets):
     """Create initial linear regression models"""
     models = {}
     
-    formula = 'score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience'
+    formula = 'score ~ C(gender, Treatment(reference="Unknown")) + C(ethnicity, Treatment(reference="Unknown")) + C(prestige, Treatment(reference="Unknown")) + skill_score + project_score + experience_score + years_experience'
     
     for name, data in datasets.items():
         try:
@@ -325,16 +303,10 @@ initial_models = create_initial_models(datasets)
 
 ```
 
+## 3.3 Interaction Effects and Model Refinement
+
 ```{python}
-# =============================================================================
-# SECTION 3: INTERACTION EFFECTS ANALYSIS
-# =============================================================================
-
-print("\nSECTION 3: INTERACTION EFFECTS ANALYSIS")
-print("=" * 50)
-
 def test_interaction_effects(datasets):
-    """Test for significant interaction effects"""
     interaction_results = {}
     
     # Define interaction pairs to test
@@ -350,13 +322,13 @@ def test_interaction_effects(datasets):
         
         for var1, var2 in interaction_pairs:
             # Create model with interaction term
-            interaction_formula = f'score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience + {var1}:{var2}'
+            interaction_formula = f'score ~ C(gender, Treatment(reference="Unknown")) + C(ethnicity, Treatment(reference="Unknown")) + C(prestige, Treatment(reference="Unknown")) + skill_score + project_score + experience_score + years_experience + {var1}:{var2}'
             
             try:
                 model_with_interaction = smf.ols(interaction_formula, data=data).fit()
                 
                 # Compare with model without interaction using F-test
-                base_formula = 'score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience'
+                base_formula = 'score ~ C(gender, Treatment(reference="Unknown")) + C(ethnicity, Treatment(reference="Unknown")) + C(prestige, Treatment(reference="Unknown")) + skill_score + project_score + experience_score + years_experience'
                 base_model = smf.ols(base_formula, data=data).fit()
                 
                 # F-test for interaction term
@@ -381,8 +353,6 @@ def test_interaction_effects(datasets):
 interaction_results = test_interaction_effects(datasets)
 
 def create_interaction_visualizations(datasets, interaction_pairs):
-    """Create comprehensive interaction visualizations"""
-    
     for company, data in datasets.items():
         # Create main interaction plot with 1x3 layout
         fig, axes = plt.subplots(1, 3, figsize=(15, 8))
@@ -427,212 +397,95 @@ def create_interaction_visualizations(datasets, interaction_pairs):
         plt.tight_layout()
         plt.show()
 
-# Create interaction visualizations
 interaction_pairs = [('gender', 'ethnicity'), ('ethnicity', 'prestige'), ('prestige', 'gender')]
 create_interaction_visualizations(datasets, interaction_pairs)
 ```
 
-```{python}
-# =============================================================================
-# SECTION 4: VARIABLE SELECTION AND MODEL REFINEMENT
-# =============================================================================
-
-print("\nSECTION 4: VARIABLE SELECTION AND MODEL REFINEMENT")
-print("=" * 50)
-
-def refine_models(datasets, initial_models):
-    """Refine models by removing non-significant variables with proper formula handling"""
-    refined_models = {}
-    model_comparisons = {}
-    
-    for name, initial_model in initial_models.items():
-        print(f"\nRefining model for {name}:")
-        
-        # Get significant variables (p < 0.1)
-        significant_vars = initial_model.pvalues[initial_model.pvalues < 0.1].index.tolist()
-        
-        # Remove intercept from significant variables
-        if 'Intercept' in significant_vars:
-            significant_vars.remove('Intercept')
-        
-        # Convert encoded categorical variables back to original variable names
-        cleaned_vars = []
-        categorical_base_vars = set()
-        
-        for var in significant_vars:
-            # Check if this is an encoded categorical variable (contains [T. or [])
-            if '[' in var and ']' in var:
-                # Extract the base variable name (e.g., 'gender[T.Female]' -> 'gender')
-                base_var = var.split('[')[0]
-                categorical_base_vars.add(base_var)
-            else:
-                # Continuous variable or non-encoded categorical
-                cleaned_vars.append(var)
-        
-        # Add base categorical variables (not the encoded versions)
-        cleaned_vars.extend(list(categorical_base_vars))
-        
-        # If too few significant variables, keep top variables by p-value
-        if len(cleaned_vars) < 2:
-            print("  Too few significant variables, using top variables by p-value")
-            pvalues = initial_model.pvalues.drop('Intercept', errors='ignore')
-            # Get top variables, excluding encoded categoricals
-            top_vars = []
-            for var in pvalues.nsmallest(5).index:
-                if '[' in var and ']' in var:
-                    base_var = var.split('[')[0]
-                    if base_var not in top_vars:
-                        top_vars.append(base_var)
-                else:
-                    if var != 'Intercept':
-                        top_vars.append(var)
-            cleaned_vars = top_vars[:3]  # Take top 3
-        
-        # Build refined formula
-        if cleaned_vars:
-            # Use the original variable names, not the encoded ones
-            refined_formula = f"score ~ {' + '.join(cleaned_vars)}"
-        else:
-            refined_formula = "score ~ 1"  # Intercept only
-        
-        print(f"  Refined formula: {refined_formula}")
-        
-        try:
-            refined_model = smf.ols(refined_formula, data=datasets[name]).fit()
-            refined_models[name] = refined_model
-            
-            # Compare models
-            aic_improvement = initial_model.aic - refined_model.aic
-            rsq_improvement = refined_model.rsquared - initial_model.rsquared
-            
-            model_comparisons[name] = {
-                'initial_vars': len(initial_model.params),
-                'refined_vars': len(refined_model.params),
-                'initial_aic': initial_model.aic,
-                'refined_aic': refined_model.aic,
-                'aic_improvement': aic_improvement,
-                'initial_rsq': initial_model.rsquared,
-                'refined_rsq': refined_model.rsquared,
-                'rsq_improvement': rsq_improvement
-            }
-            
-            print(f"  Initial AIC: {initial_model.aic:.2f}")
-            print(f"  Refined AIC: {refined_model.aic:.2f}")
-            print(f"  AIC Improvement: {aic_improvement:+.2f}")
-            print(f"  Variables: {len(initial_model.params)} → {len(refined_model.params)}")
-            print(f"  Refined R-squared: {refined_model.rsquared:.4f}")
-            
-        except Exception as e:
-            print(f"  Error refining model: {e}")
-            print(f"  Keeping original model for {name}")
-            refined_models[name] = initial_model
-    
-    return refined_models, model_comparisons
-
-# Refine models
-refined_models, model_comparisons = refine_models(datasets, initial_models)
-
-def create_model_comparison_plot(model_comparisons):
-    """Create visualization comparing initial and refined models"""
-    
-    companies = list(model_comparisons.keys())
-    metrics = ['initial_aic', 'refined_aic']
-    labels = ['Initial Model', 'Refined Model']
-    
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-    
-    # AIC comparison
-    x_pos = np.arange(len(companies))
-    width = 0.35
-    
-    for i, metric in enumerate(metrics):
-        values = [model_comparisons[company][metric] for company in companies]
-        ax1.bar(x_pos + i*width, values, width, label=labels[i], alpha=0.8)
-    
-    ax1.set_xlabel('Company')
-    ax1.set_ylabel('AIC Value')
-    ax1.set_title('AIC Comparison: Initial vs Refined Models', fontweight='bold')
-    ax1.set_xticks(x_pos + width/2)
-    ax1.set_xticklabels([c.title() for c in companies])
-    ax1.legend()
-    ax1.grid(True, alpha=0.3)
-    
-    # R-squared comparison
-    initial_rsq = [model_comparisons[company]['initial_rsq'] for company in companies]
-    refined_rsq = [model_comparisons[company]['refined_rsq'] for company in companies]
-    
-    x_pos = np.arange(len(companies))
-    ax2.bar(x_pos - width/2, initial_rsq, width, label='Initial', alpha=0.8)
-    ax2.bar(x_pos + width/2, refined_rsq, width, label='Refined', alpha=0.8)
-    
-    ax2.set_xlabel('Company')
-    ax2.set_ylabel('R-squared')
-    ax2.set_title('R-squared Comparison: Initial vs Refined Models', fontweight='bold')
-    ax2.set_xticks(x_pos)
-    ax2.set_xticklabels([c.title() for c in companies])
-    ax2.legend()
-    ax2.grid(True, alpha=0.3)
-    
-    plt.tight_layout()
-    plt.show()
-
-create_model_comparison_plot(model_comparisons)
-
-```
 
 ```{python}
-# =============================================================================
-# SECTION 5: MODEL DIAGNOSTICS AND ASSUMPTIONS
-# =============================================================================
-
-print("\nSECTION 5: MODEL DIAGNOSTICS AND ASSUMPTIONS")
-print("=" * 50)
 
 def check_model_assumptions(models, datasets):
-    """Comprehensive model diagnostics and assumption checking"""
-    
     assumption_results = {}
     
     for name, model in models.items():
         print(f"\nChecking assumptions for {name} model:")
         assumption_results[name] = {}
         
-        # Get residuals and fitted values
-        residuals = model.resid
-        fitted = model.fittedvalues
+        # Handle both OLS and Ridge regression models
+        is_ridge = isinstance(model, dict)
+        
+        if is_ridge:
+            # For Ridge regression, compute residuals and fitted values manually
+            data = datasets[name]
+            y = data['score'].values
+            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
+                              drop_first=False)
+            # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
+            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
+            X = X.drop(columns=cols_to_drop)
+            X_scaled = model['scaler'].transform(X)
+            fitted = model['model'].predict(X_scaled)
+            residuals = pd.Series(y - fitted)
+        else:
+            # For OLS models
+            residuals = model.resid
+            fitted = model.fittedvalues
+        
         n = len(residuals)
         
         # 1. Normality test (Shapiro-Wilk)
         if n < 5000:  # Shapiro-Wilk is recommended for n < 5000
             shapiro_stat, shapiro_p = stats.shapiro(residuals)
             assumption_results[name]['normality_p'] = shapiro_p
-            normality = "✓ Normal" if shapiro_p > 0.05 else "✗ Non-normal"
+            normality = "Normal" if shapiro_p > 0.05 else "Non-normal"
             print(f"  Normality (Shapiro-Wilk): p = {shapiro_p:.4f} ({normality})")
         
-        # 2. Homoscedasticity (Breusch-Pagan test)
+        # 2. Homoscedasticity (Brown-Forsythe test — Levene's test with center='median')
         try:
-            from statsmodels.stats.diagnostic import het_breuschpagan
-            bp_lm, bp_p, _, _ = het_breuschpagan(residuals, model.model.exog)
-            assumption_results[name]['homoscedasticity_p'] = bp_p
-            homoscedastic = "✓ Homoscedastic" if bp_p > 0.05 else "✗ Heteroscedastic"
-            print(f"  Homoscedasticity (Breusch-Pagan): p = {bp_p:.4f} ({homoscedastic})")
-        except:
-            print("  Homoscedasticity test failed")
+            # Brown-Forsythe: perform Levene's test using the median, grouping residuals by
+            # quantiles of the fitted values (e.g., quartiles). This checks variance equality
+            # across different fitted-value regions.
+            groups = pd.qcut(fitted, q=4, labels=False, duplicates='drop')
+            unique_groups = np.unique(groups)
+            group_residuals = [residuals[groups == g].values for g in unique_groups]
+
+            if len(group_residuals) < 2:
+                raise ValueError('Not enough groups to perform Brown-Forsythe test')
+
+            bf_stat, bf_p = stats.levene(*group_residuals, center='median')
+            assumption_results[name]['homoscedasticity_p'] = bf_p
+            homoscedastic = "Homoscedastic" if bf_p > 0.05 else "Not Heteroscedastic"
+            print(f"  Homoscedasticity (Brown-Forsythe): p = {bf_p:.4f} ({homoscedastic})")
+        except Exception as e:
+            print(f"  Homoscedasticity test failed: {e}")
         
         # 3. Multicollinearity (VIF)
         try:
-            # Calculate VIF for each variable
+            # Calculate VIF for each variable. Handle both OLS (statsmodels) and Ridge (dict wrapper)
             vif_data = pd.DataFrame()
-            vif_data["Variable"] = model.model.exog_names
-            vif_data["VIF"] = [variance_inflation_factor(model.model.exog, i) 
-                             for i in range(model.model.exog.shape[1])]
-            
+            if isinstance(model, dict):
+                # Recreate the design matrix used by the Ridge model
+                X_vif = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']],
+                                       drop_first=False)
+                cols_to_drop = [col for col in X_vif.columns if col.endswith('_Unknown')]
+                X_vif = X_vif.drop(columns=cols_to_drop)
+                exog = X_vif.values
+                exog_names = X_vif.columns
+            else:
+                # Use the underlying statsmodels exog matrix
+                exog = model.model.exog
+                exog_names = model.model.exog_names
+
+            vif_data["Variable"] = exog_names
+            vif_data["VIF"] = [variance_inflation_factor(exog, i)
+                                 for i in range(exog.shape[1])]
+
             high_vif = vif_data[vif_data['VIF'] > 10]
             assumption_results[name]['high_vif_count'] = len(high_vif)
             print(f"  Multicollinearity: {len(high_vif)} variables with VIF > 10")
-            
-        except:
-            print("  VIF calculation failed")
+
+        except Exception as e:
+            print(f"  VIF calculation failed: {e}")
         
         # 4. Outlier detection
         Q1 = residuals.quantile(0.25)
@@ -647,10 +500,165 @@ def check_model_assumptions(models, datasets):
     return assumption_results
 
 # Check model assumptions
-assumption_results = check_model_assumptions(refined_models, datasets)
+assumption_results = check_model_assumptions(initial_models, datasets)
+```
 
+```{python}
+def refine_models(datasets, initial_models):
+    """Fit Ridge Regression models with cross-validated alpha parameter"""
+    from sklearn.linear_model import RidgeCV
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.metrics import mean_squared_error, r2_score
+    
+    refined_models = {}
+    model_comparisons = {}
+    
+    for name, initial_model in initial_models.items():
+        print(f"\nFitting Ridge Regression for {name}:")
+        
+        try:
+            # Get the dataset
+            data = datasets[name]
+            
+            # Prepare the formula and get design matrix
+            formula = 'score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience'
+            y = data['score'].values
+            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
+                              drop_first=False)
+            # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
+            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
+            X = X.drop(columns=cols_to_drop)
+            
+            # Standardize features for Ridge regression
+            scaler = StandardScaler()
+            X_scaled = scaler.fit_transform(X)
+            
+            # Fit RidgeCV with cross-validation to find optimal alpha
+            alphas = np.logspace(-2, 3, 100)
+            ridge_cv = RidgeCV(alphas=alphas, cv=5, scoring='r2')
+            ridge_cv.fit(X_scaled, y)
+            
+            # Get predictions and performance metrics
+            y_pred = ridge_cv.predict(X_scaled)
+            ridge_r2 = r2_score(y, y_pred)
+            ridge_mse = mean_squared_error(y, y_pred)
+            
+            # Store feature columns for later use
+            feature_columns = X.columns.tolist()
+            
+            # Store the ridge model with scaler and feature info
+            refined_models[name] = {
+                'model': ridge_cv,
+                'scaler': scaler,
+                'feature_columns': feature_columns
+            }
+            
+            # Calculate initial model metrics for comparison
+            initial_y_pred = initial_model.fittedvalues
+            initial_mse = mean_squared_error(y, initial_y_pred)
+            
+            model_comparisons[name] = {
+                'initial_rsq': initial_model.rsquared,
+                'ridge_rsq': ridge_r2,
+                'rsq_improvement': ridge_r2 - initial_model.rsquared,
+                'initial_mse': initial_mse,
+                'ridge_mse': ridge_mse,
+                'mse_improvement': initial_mse - ridge_mse,
+                'optimal_alpha': ridge_cv.alpha_,
+                'n_features': X_scaled.shape[1]
+            }
+            
+            print(f"  Optimal alpha: {ridge_cv.alpha_:.4f}")
+            print(f"  Initial OLS R²: {initial_model.rsquared:.4f}")
+            print(f"  Ridge R²: {ridge_r2:.4f}")
+            print(f"  R² Improvement: {ridge_r2 - initial_model.rsquared:+.4f}")
+            print(f"  Initial MSE: {initial_mse:.4f}")
+            print(f"  Ridge MSE: {ridge_mse:.4f}")
+            print(f"  MSE Improvement: {initial_mse - ridge_mse:+.4f}")
+            print(f"  Number of features: {X_scaled.shape[1]}")
+            
+        except Exception as e:
+            print(f"  Error fitting ridge model: {e}")
+            print(f"  Keeping original model for {name}")
+            refined_models[name] = initial_model
+            model_comparisons[name] = {
+                'initial_rsq': initial_model.rsquared,
+                'ridge_rsq': None,
+                'rsq_improvement': None,
+                'initial_mse': None,
+                'ridge_mse': None
+            }
+    
+    return refined_models, model_comparisons
+
+# Refine models
+refined_models, model_comparisons = refine_models(datasets, initial_models)
+
+```
+
+
+```{python}
+def create_model_comparison_plot(model_comparisons):
+    """Create visualization comparing initial OLS and Ridge Regression models"""
+    
+    companies = list(model_comparisons.keys())
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # Filter out companies with None values
+    valid_companies = [c for c in companies if model_comparisons[c]['ridge_rsq'] is not None]
+    
+    # R-squared comparison
+    initial_rsq = [model_comparisons[company]['initial_rsq'] for company in valid_companies]
+    ridge_rsq = [model_comparisons[company]['ridge_rsq'] for company in valid_companies]
+    
+    x_pos = np.arange(len(valid_companies))
+    width = 0.35
+    
+    ax1.bar(x_pos - width/2, initial_rsq, width, label='Initial OLS', alpha=0.8, color='steelblue')
+    ax1.bar(x_pos + width/2, ridge_rsq, width, label='Ridge Regression', alpha=0.8, color='coral')
+    
+    ax1.set_xlabel('Company', fontweight='bold')
+    ax1.set_ylabel('R²', fontweight='bold')
+    ax1.set_title('R² Comparison: OLS vs Ridge Regression', fontweight='bold')
+    ax1.set_xticks(x_pos)
+    ax1.set_xticklabels([c.title() for c in valid_companies])
+    ax1.legend()
+    ax1.grid(True, alpha=0.3, axis='y')
+    ax1.set_ylim([0, 1])
+    
+    # MSE comparison
+    initial_mse = [model_comparisons[company]['initial_mse'] for company in valid_companies]
+    ridge_mse = [model_comparisons[company]['ridge_mse'] for company in valid_companies]
+    
+    ax2.bar(x_pos - width/2, initial_mse, width, label='Initial OLS', alpha=0.8, color='steelblue')
+    ax2.bar(x_pos + width/2, ridge_mse, width, label='Ridge Regression', alpha=0.8, color='coral')
+    
+    ax2.set_xlabel('Company', fontweight='bold')
+    ax2.set_ylabel('Mean Squared Error', fontweight='bold')
+    ax2.set_title('MSE Comparison: OLS vs Ridge Regression', fontweight='bold')
+    ax2.set_xticks(x_pos)
+    ax2.set_xticklabels([c.title() for c in valid_companies])
+    ax2.legend()
+    ax2.grid(True, alpha=0.3, axis='y')
+    
+    plt.tight_layout()
+    plt.show()
+
+create_model_comparison_plot(model_comparisons)
+
+```
+
+## 3.4. Model Diagnostics and Assumptions
+
+```{python}
+assumption_results = check_model_assumptions(refined_models, datasets)
+```
+
+```{python}
 def create_diagnostic_plots(models, datasets):
     """Create comprehensive diagnostic plots with proper data alignment"""
+    from sklearn.preprocessing import StandardScaler
     
     for name, model in models.items():
         print(f"\nCreating diagnostic plots for {name}...")
@@ -659,28 +667,49 @@ def create_diagnostic_plots(models, datasets):
         fig.suptitle(f'Model Diagnostic Plots - {name.title()}', 
                     fontsize=16, fontweight='bold')
         
-        residuals = model.resid
-        fitted = model.fittedvalues
-        
-        # Get the actual data used in the model (after dropping NA)
-        # model.model.data.orig_exog contains the original exogenous data
-        # but we need to align it properly
+        # Handle both OLS and Ridge regression models
         try:
-            # Method 1: Get the row indices used in the model
-            if hasattr(model.model, 'row_labels'):
-                used_indices = model.model.row_labels
-                actual_scores = datasets[name].iloc[used_indices]['score']
-            else:
-                # Method 2: Use the endogenous variable from the model
-                actual_scores = model.model.endog
+            from sklearn.linear_model import RidgeCV
         except:
-            # Method 3: Fallback - try to align by length
-            if len(fitted) == len(datasets[name]):
-                actual_scores = datasets[name]['score']
-            else:
-                # Method 4: Last resort - use fitted values length and assume it's a subset
-                print(f"  Warning: Data alignment issue for {name}. Using available data.")
-                actual_scores = datasets[name]['score'].iloc[:len(fitted)]
+            RidgeCV = None
+        
+        data = datasets[name]
+        actual_scores = data['score'].values
+        
+        if isinstance(model, dict):
+            # For Ridge regression, compute residuals and fitted values manually
+            y = actual_scores
+            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
+                              drop_first=False)
+            # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
+            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
+            X = X.drop(columns=cols_to_drop)
+            scaler = model['scaler']
+            # Use the stored scaler to transform (do not refit)
+            X_scaled = scaler.transform(X)
+            fitted = model['model'].predict(X_scaled)
+            residuals = y - fitted
+        else:
+            # For OLS models
+            residuals = model.resid.values
+            fitted = model.fittedvalues.values
+            # Get the actual data used in the model (after dropping NA)
+            try:
+                # Method 1: Get the row indices used in the model
+                if hasattr(model.model, 'row_labels'):
+                    used_indices = model.model.row_labels
+                    actual_scores = datasets[name].iloc[used_indices]['score'].values
+                else:
+                    # Method 2: Use the endogenous variable from the model
+                    actual_scores = model.model.endog
+            except:
+                # Method 3: Fallback - try to align by length
+                if len(fitted) == len(datasets[name]):
+                    actual_scores = datasets[name]['score'].values
+                else:
+                    # Method 4: Last resort - use fitted values length and assume it's a subset
+                    print(f"  Warning: Data alignment issue for {name}. Using available data.")
+                    actual_scores = datasets[name]['score'].iloc[:len(fitted)].values
         
         # Ensure we have the same number of observations
         if len(actual_scores) != len(fitted):
@@ -688,11 +717,11 @@ def create_diagnostic_plots(models, datasets):
             # Use the minimum length to avoid errors
             min_len = min(len(actual_scores), len(fitted))
             actual_scores = actual_scores[:min_len]
-            fitted_adj = fitted[:min_len]
-            residuals_adj = residuals[:min_len]
+            fitted_adj = np.array(fitted[:min_len])
+            residuals_adj = np.array(residuals[:min_len])
         else:
-            fitted_adj = fitted
-            residuals_adj = residuals
+            fitted_adj = np.array(fitted)
+            residuals_adj = np.array(residuals)
         
         # 1. Residuals vs Fitted
         axes[0, 0].scatter(fitted_adj, residuals_adj, alpha=0.6, color='steelblue')
@@ -734,16 +763,22 @@ def create_diagnostic_plots(models, datasets):
         # 6. Cook's Distance for influential points
         try:
             from statsmodels.stats.outliers_influence import OLSInfluence
-            influence = OLSInfluence(model)
-            cooks_d = influence.cooks_distance[0]
-            axes[1, 2].stem(range(len(cooks_d)), cooks_d, basefmt=" ")
-            axes[1, 2].axhline(y=4/len(cooks_d), color='red', linestyle='--', alpha=0.8, 
-                             label='4/n threshold')
-            axes[1, 2].set_xlabel('Observation Index')
-            axes[1, 2].set_ylabel("Cook's Distance")
-            axes[1, 2].set_title("Cook's Distance for Influential Points")
-            axes[1, 2].legend()
-            axes[1, 2].grid(True, alpha=0.3)
+            # Only compute Cook's distance for OLS (statsmodels) models
+            if isinstance(model, dict):
+                axes[1, 2].text(0.5, 0.5, "Cook's Distance not available for Ridge models", 
+                                ha='center', va='center', transform=axes[1, 2].transAxes)
+                axes[1, 2].set_title("Cook's Distance (not available for Ridge)")
+            else:
+                influence = OLSInfluence(model)
+                cooks_d = influence.cooks_distance[0]
+                axes[1, 2].stem(range(len(cooks_d)), cooks_d, basefmt=" ")
+                axes[1, 2].axhline(y=4/len(cooks_d), color='red', linestyle='--', alpha=0.8, 
+                                 label='4/n threshold')
+                axes[1, 2].set_xlabel('Observation Index')
+                axes[1, 2].set_ylabel("Cook's Distance")
+                axes[1, 2].set_title("Cook's Distance for Influential Points")
+                axes[1, 2].legend()
+                axes[1, 2].grid(True, alpha=0.3)
         except Exception as e:
             axes[1, 2].text(0.5, 0.5, f"Cook's Distance\nCalculation Failed\n{str(e)}", 
                           ha='center', va='center', transform=axes[1, 2].transAxes)
@@ -756,16 +791,14 @@ create_diagnostic_plots(refined_models, datasets)
 
 ```
 
+## 3.5 Final Model Interpretation and Comparisons
+
 ```{python}
-# =============================================================================
-# SECTION 6: FINAL MODEL INTERPRETATION AND COMPARISON
-# =============================================================================
-
-print("\nSECTION 6: FINAL MODEL INTERPRETATION AND COMPARISON")
-print("=" * 50)
-
-def create_final_model_summary(refined_models):
+def create_final_model_summary(refined_models, datasets):
     """Create comprehensive final model summary and visualizations"""
+    from sklearn.linear_model import RidgeCV
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.metrics import r2_score
     
     # Create coefficient comparison plot
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
@@ -777,38 +810,88 @@ def create_final_model_summary(refined_models):
     for idx, (company, model) in enumerate(refined_models.items()):
         if idx >= len(axes):
             break
+        
+        try:
+            # Check if model is Ridge or OLS
+            if isinstance(model, dict):
+                # For Ridge: get coefficients directly, compute bootstrap CIs
+                data = datasets[company]
+                y = data['score'].values
+                X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
+                                  drop_first=False)
+                # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
+                cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
+                X = X.drop(columns=cols_to_drop)
+                X_scaled = model['scaler'].transform(X)
+                
+                # Get fitted values and R²
+                y_pred = model['model'].predict(X_scaled)
+                r_squared = r2_score(y, y_pred)
+                
+                # Coefficients (from the model's coef_ attribute)
+                coefficients = model['model'].coef_
+                feature_names = X.columns
+                
+                # Bootstrap confidence intervals (simplified approach)
+                n_bootstrap = 100
+                bootstrap_coefs = []
+                np.random.seed(42)
+                
+                for _ in range(n_bootstrap):
+                    indices = np.random.choice(len(X_scaled), len(X_scaled), replace=True)
+                    X_boot = X_scaled[indices]
+                    y_boot = y[indices]
+                    model_boot = RidgeCV(alphas=np.logspace(-2, 3, 100), cv=5)
+                    model_boot.fit(X_boot, y_boot)
+                    bootstrap_coefs.append(model_boot.coef_)
+                
+                bootstrap_coefs = np.array(bootstrap_coefs)
+                lower_ci = np.percentile(bootstrap_coefs, 2.5, axis=0)
+                upper_ci = np.percentile(bootstrap_coefs, 97.5, axis=0)
+                
+                coef_df = pd.DataFrame({
+                    'coefficient': coefficients,
+                    'lower': lower_ci,
+                    'upper': upper_ci
+                }, index=feature_names)
+                
+            else:
+                # For OLS: use native conf_int method
+                coefficients = model.params
+                conf_intervals = model.conf_int(alpha=0.05)
+                conf_intervals.columns = ['lower', 'upper']
+                r_squared = model.rsquared
+                
+                coef_df = pd.DataFrame({
+                    'coefficient': coefficients,
+                    'lower': conf_intervals['lower'],
+                    'upper': conf_intervals['upper']
+                }).drop('Intercept', errors='ignore')
             
-        # Extract coefficients and confidence intervals
-        coefficients = model.params
-        conf_intervals = model.conf_int(alpha=0.05)  # 95% CI
-        conf_intervals.columns = ['lower', 'upper']
-        
-        # Create DataFrame for plotting (exclude intercept)
-        coef_df = pd.DataFrame({
-            'coefficient': coefficients,
-            'lower': conf_intervals['lower'],
-            'upper': conf_intervals['upper']
-        }).drop('Intercept', errors='ignore')
-        
-        # Sort by coefficient magnitude
-        coef_df = coef_df.reindex(coef_df['coefficient'].abs().sort_values(ascending=False).index)
-        
-        # Create coefficient plot
-        y_pos = np.arange(len(coef_df))
-        axes[idx].errorbar(coef_df['coefficient'], y_pos, 
-                          xerr=[coef_df['coefficient'] - coef_df['lower'], 
-                                coef_df['upper'] - coef_df['coefficient']],
-                          fmt='o', color='steelblue', alpha=0.8, capsize=5, 
-                          markersize=6, linewidth=2)
-        
-        axes[idx].axvline(x=0, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        axes[idx].set_yticks(y_pos)
-        axes[idx].set_yticklabels([label.replace('_', ' ').title() for label in coef_df.index], 
-                                fontsize=9)
-        axes[idx].set_xlabel('Coefficient Estimate', fontweight='bold')
-        axes[idx].set_title(f'{company.title()}\nR² = {model.rsquared:.3f}', 
-                          fontweight='bold', fontsize=12)
-        axes[idx].grid(True, alpha=0.3)
+            # Sort by coefficient magnitude
+            coef_df = coef_df.reindex(coef_df['coefficient'].abs().sort_values(ascending=False).index)
+            
+            # Create coefficient plot
+            y_pos = np.arange(len(coef_df))
+            axes[idx].errorbar(coef_df['coefficient'], y_pos, 
+                              xerr=[coef_df['coefficient'] - coef_df['lower'], 
+                                    coef_df['upper'] - coef_df['coefficient']],
+                              fmt='o', color='steelblue', alpha=0.8, capsize=5, 
+                              markersize=6, linewidth=2)
+            
+            axes[idx].axvline(x=0, color='red', linestyle='--', alpha=0.7, linewidth=1)
+            axes[idx].set_yticks(y_pos)
+            axes[idx].set_yticklabels([label.replace('_', ' ').title() for label in coef_df.index], 
+                                    fontsize=9)
+            axes[idx].set_xlabel('Coefficient Estimate', fontweight='bold')
+            axes[idx].set_title(f'{company.title()}\nR² = {r_squared:.3f}', 
+                              fontweight='bold', fontsize=12)
+            axes[idx].grid(True, alpha=0.3)
+            
+        except Exception as e:
+            axes[idx].text(0.5, 0.5, f'Error creating plot:\n{str(e)}', 
+                          ha='center', va='center', transform=axes[idx].transAxes)
+            axes[idx].set_title(f'{company.title()}', fontweight='bold')
     
     plt.tight_layout()
     plt.show()
@@ -818,43 +901,144 @@ def create_final_model_summary(refined_models):
     print("-" * 60)
     
     for company, model in refined_models.items():
-        print(f"\n{company.upper()} Final Model:")
-        print(f"  R-squared: {model.rsquared:.4f}")
-        print(f"  Adjusted R-squared: {model.rsquared_adj:.4f}")
-        print(f"  F-statistic: {model.fvalue:.2f}")
-        print(f"  Prob (F-statistic): {model.f_pvalue:.4f}")
-        print(f"  AIC: {model.aic:.2f}")
-        print(f"  BIC: {model.bic:.2f}")
-        print(f"  Number of observations: {model.nobs}")
+        from sklearn.linear_model import RidgeCV
+        from sklearn.metrics import r2_score
         
-        # Print significant coefficients
-        significant_coefs = model.pvalues[model.pvalues < 0.05].sort_values()
-        if len(significant_coefs) > 0:
-            print("  Significant predictors (p < 0.05):")
-            for var, pval in significant_coefs.items():
-                coef = model.params[var]
-                print(f"    {var}: {coef:+.4f} (p = {pval:.4f})")
-        else:
-            print("  No significant predictors at p < 0.05")
+        print(f"\n{company.upper()} Final Model:")
+        
+        if isinstance(model, dict):
+            # For Ridge regression
+            data = datasets[company]
+            y = data['score'].values
+            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
+                              drop_first=False)
+            # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
+            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
+            X = X.drop(columns=cols_to_drop)
+            X_scaled = model['scaler'].transform(X)
+            y_pred = model['model'].predict(X_scaled)
+            r_squared = r2_score(y, y_pred)
+            
+            print(f"  Model Type: Ridge Regression")
+            print(f"  Optimal Alpha: {model['model'].alpha_:.4f}")
+            print(f"  R-squared: {r_squared:.4f}")
+            print(f"  Number of observations: {len(y)}")
+            print(f"  Number of features: {X_scaled.shape[1]}")
 
-def create_variable_importance_plot(models):
+            # Print initial OLS coefficients and p-values if available
+            try:
+                init_model = initial_models.get(company)
+                if init_model is not None:
+                    print("  Initial OLS Coefficients and p-values:")
+                    for var, coef in init_model.params.items():
+                        pval = init_model.pvalues.get(var, np.nan)
+                        print(f"    {var}: {coef:+.4f} (p = {pval:.4f})")
+                else:
+                    print("  No initial OLS model available for comparison.")
+            except Exception:
+                print("  Could not retrieve initial OLS model coefficients.")
+
+            # Compute bootstrap-based CIs and approximate p-values for Ridge coefficients
+            from sklearn.linear_model import Ridge
+            n_bootstrap = 300
+            bootstrap_coefs = []
+            np.random.seed(42)
+            for _ in range(n_bootstrap):
+                indices = np.random.choice(len(X_scaled), len(X_scaled), replace=True)
+                Xb = X_scaled[indices]
+                yb = y[indices]
+                rb = Ridge(alpha=float(model['model'].alpha_))
+                rb.fit(Xb, yb)
+                bootstrap_coefs.append(rb.coef_)
+
+            bootstrap_coefs = np.array(bootstrap_coefs)
+            lower_ci = np.percentile(bootstrap_coefs, 2.5, axis=0)
+            upper_ci = np.percentile(bootstrap_coefs, 97.5, axis=0)
+
+            # Approximate two-sided p-values from bootstrap distribution
+            pvals = []
+            for j in range(len(model['model'].coef_)):
+                bootj = bootstrap_coefs[:, j]
+                p = 2 * min(np.mean(bootj <= 0), np.mean(bootj >= 0))
+                pvals.append(p)
+
+            print("  Ridge Coefficients (approx. p-values from bootstrap and 95% CI):")
+            for name, coef, pval, lo, hi in zip(X.columns, model['model'].coef_, pvals, lower_ci, upper_ci):
+                print(f"    {name}: {coef:+.4f} (p ≈ {pval:.4f}) [{lo:.4f}, {hi:.4f}]")
+        else:
+            # For OLS models
+            print(f"  Model Type: OLS Regression")
+            print(f"  R-squared: {model.rsquared:.4f}")
+            print(f"  Adjusted R-squared: {model.rsquared_adj:.4f}")
+            print(f"  F-statistic: {model.fvalue:.2f}")
+            print(f"  Prob (F-statistic): {model.f_pvalue:.4f}")
+            print(f"  AIC: {model.aic:.2f}")
+            print(f"  BIC: {model.bic:.2f}")
+            print(f"  Number of observations: {model.nobs}")
+
+            # Print all coefficients with p-values
+            print("  OLS Coefficients and p-values:")
+            for var, coef in model.params.items():
+                pval = model.pvalues.get(var, np.nan)
+                print(f"    {var}: {coef:+.4f} (p = {pval:.4f})")
+
+            # Also highlight significant predictors
+            significant_coefs = model.pvalues[model.pvalues < 0.05].sort_values()
+            if len(significant_coefs) > 0:
+                print("  Significant predictors (p < 0.05):")
+                for var, pval in significant_coefs.items():
+                    coef = model.params[var]
+                    print(f"    {var}: {coef:+.4f} (p = {pval:.4f})")
+
+create_final_model_summary(refined_models, datasets)
+
+```
+
+
+```{python}
+def create_variable_importance_plot(models, datasets):
     """Create variable importance comparison across all models"""
+    from sklearn.linear_model import RidgeCV
+    from sklearn.preprocessing import StandardScaler
     
     importance_data = []
     
     for company, model in models.items():
-        # Use absolute t-values as measure of importance
-        t_values = np.abs(model.tvalues.drop('Intercept', errors='ignore'))
-        
-        for var, t_val in t_values.items():
-            coef = model.params[var]
-            importance_data.append({
-                'Company': company.title(),
-                'Variable': var.replace('_', ' ').title(),
-                'Importance': t_val,
-                'Coefficient': coef,
-                'Direction': 'Positive' if coef > 0 else 'Negative'
-            })
+        if isinstance(model, dict):
+            # For Ridge: use standardized coefficients as importance (they're already scaled)
+            data = datasets[company]
+            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
+                              drop_first=False)
+            # Drop 'Unknown' categories to match model training
+            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
+            X = X.drop(columns=cols_to_drop)
+            feature_names = X.columns
+            
+            # Importance based on absolute standardized coefficients
+            ridge_model = model['model']
+            importance_vals = np.abs(ridge_model.coef_)
+            
+            for var, imp_val, coef in zip(feature_names, importance_vals, ridge_model.coef_):
+                importance_data.append({
+                    'Company': company.title(),
+                    'Variable': var.replace('_', ' ').title(),
+                    'Importance': imp_val,
+                    'Coefficient': coef,
+                    'Direction': 'Positive' if coef > 0 else 'Negative'
+                })
+        else:
+            # For OLS: use absolute t-values as measure of importance
+            t_values = np.abs(model.tvalues.drop('Intercept', errors='ignore'))
+            
+            for var, t_val in t_values.items():
+                coef = model.params[var]
+                importance_data.append({
+                    'Company': company.title(),
+                    'Variable': var.replace('_', ' ').title(),
+                    'Importance': t_val,
+                    'Coefficient': coef,
+                    'Direction': 'Positive' if coef > 0 else 'Negative'
+                })
     
     importance_df = pd.DataFrame(importance_data)
     
@@ -884,26 +1068,46 @@ def create_variable_importance_plot(models):
     return importance_df
 
 # Create final summaries and visualizations
-create_final_model_summary(refined_models)
-importance_df = create_variable_importance_plot(refined_models)
+importance_df = create_variable_importance_plot(refined_models, datasets)
 
-# =============================================================================
-# SUMMARY STATISTICS
-# =============================================================================
+```
 
-print("\n" + "=" * 60)
+```{python}
 print("ANALYSIS COMPLETE - SUMMARY")
-print("=" * 60)
 
 print(f"\nDatasets analyzed: {list(datasets.keys())}")
 print(f"Total models created: {len(refined_models)}")
 
 # Calculate overall performance metrics
-avg_rsquared = np.mean([model.rsquared for model in refined_models.values()])
-avg_adj_rsquared = np.mean([model.rsquared_adj for model in refined_models.values()])
+from sklearn.linear_model import RidgeCV
+from sklearn.metrics import r2_score
+from sklearn.preprocessing import StandardScaler
+
+r2_scores = []
+for company, model in refined_models.items():
+    if isinstance(model, dict):
+        # For Ridge: compute R² manually
+        data = datasets[company]
+        y = data['score'].values
+        X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
+                          drop_first=False)
+        # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
+        cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
+        X = X.drop(columns=cols_to_drop)
+        X_scaled = model['scaler'].transform(X)
+        y_pred = model['model'].predict(X_scaled)
+        r2 = r2_score(y, y_pred)
+        r2_scores.append(r2)
+    else:
+        # For OLS: use native rsquared
+        r2_scores.append(model.rsquared)
+
+avg_rsquared = np.mean(r2_scores)
 
 print(f"\nAverage R-squared across models: {avg_rsquared:.4f}")
-print(f"Average Adjusted R-squared across models: {avg_adj_rsquared:.4f}")
+if all(not isinstance(model, dict) for model in refined_models.values()):
+    avg_adj_rsquared = np.mean([model.rsquared_adj for model in refined_models.values()])
+    print(f"Average Adjusted R-squared across models: {avg_adj_rsquared:.4f}")
 
 # Identify most consistent predictors
 if not importance_df.empty:

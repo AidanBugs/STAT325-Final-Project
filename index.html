@@ -34,8 +34,37 @@ ul.task-list li input[type="checkbox"] {
 <link href="index_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="index_files/libs/bootstrap/bootstrap-8a79a254b8e706d3c925cde0a310d4f0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="index_files/libs/bootstrap/bootstrap-eb7716ca82f93712db20cdbd2e8a0e6a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -91,11 +120,15 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#data-collection-and-purpose" id="toc-data-collection-and-purpose" class="nav-link" data-scroll-target="#data-collection-and-purpose">2.1 Data Collection and Purpose</a></li>
   <li><a href="#data-processing" id="toc-data-processing" class="nav-link" data-scroll-target="#data-processing">2.2 Data Processing</a></li>
-  <li><a href="#statistical-tools" id="toc-statistical-tools" class="nav-link" data-scroll-target="#statistical-tools">2.3 Statistical Tools</a></li>
+  <li><a href="#statistical-tools-and-approach" id="toc-statistical-tools-and-approach" class="nav-link" data-scroll-target="#statistical-tools-and-approach">2.3 Statistical Tools and Approach</a></li>
   </ul></li>
-  <li><a href="#results-and-discussion" id="toc-results-and-discussion" class="nav-link" data-scroll-target="#results-and-discussion">3 Results and Discussion</a></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">4 Conclusion</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">5 References</a></li>
+  <li><a href="#results-and-discussion" id="toc-results-and-discussion" class="nav-link" data-scroll-target="#results-and-discussion">3 Results and Discussion</a>
+  <ul class="collapse">
+  <li><a href="#initial-modeling" id="toc-initial-modeling" class="nav-link" data-scroll-target="#initial-modeling">Initial Modeling</a></li>
+  <li><a href="#model-improvements-and-diagnostics" id="toc-model-improvements-and-diagnostics" class="nav-link" data-scroll-target="#model-improvements-and-diagnostics">Model Improvements and Diagnostics</a></li>
+  <li><a href="#improved-model" id="toc-improved-model" class="nav-link" data-scroll-target="#improved-model">Improved Model</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="index.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
@@ -131,68 +164,329 @@ ul.task-list li input[type="checkbox"] {
 <p>For creating the score datasets themselves, the resumes were scored by the model and then the model was asked to guess the gender, ethnicity, and institutional prestige of the candidate. For determining the skill/project/expperience relevance, that was also a call to the language model. It is important to note that each column of data is a separate instance of the language model to reduce the liklihood of previous responses affecting the current responses. All of this information was then used to create the score dataset for each of the models used in this project.</p>
 <p>The models used for this project include IBM’s <em>granite3.3:8b</em>, Microsoft’s <em>Phi4:14b</em> and Meta’s <em>llama3.1:8b</em>. These models were choosen because they are highly rated models despite the lower paramter size and are all open source.</p>
 </section>
-<section id="statistical-tools" class="level2">
-<h2 class="anchored" data-anchor-id="statistical-tools">2.3 Statistical Tools</h2>
-<div id="c499ff97" class="cell" data-execution_count="2">
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/cell-3-output-1.png" width="950" height="569" class="figure-img"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/cell-3-output-2.png" width="950" height="569" class="figure-img"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/cell-3-output-3.png" width="950" height="569" class="figure-img"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-==================================================
-MODEL SUMMARIES
-==================================================
-
-IBM Model Summary:
-R-squared: 0.0920
-Adjusted R-squared: 0.0617
-F-statistic: 3.0335
-Prob (F-statistic): 0.0003
---------------------------------------------------
-
-META Model Summary:
-R-squared: 0.0170
-Adjusted R-squared: -0.0099
-F-statistic: 0.6325
-Prob (F-statistic): 0.8272
---------------------------------------------------
-
-MICROSOFT Model Summary:
-R-squared: 0.3371
-Adjusted R-squared: 0.3190
-F-statistic: 18.6239
-Prob (F-statistic): 0.0000
---------------------------------------------------</code></pre>
-</div>
-</div>
+<section id="statistical-tools-and-approach" class="level2">
+<h2 class="anchored" data-anchor-id="statistical-tools-and-approach">2.3 Statistical Tools and Approach</h2>
+<p>After the resumes have been processed by the language models, there was some data cleaning to ensure the models followed the instructions. The initial approach was to use linear regression to predict the resume score from all of the other variables in the dataset. The formula used for this model was: <code>score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience</code>. Here, the response variable is the resume score which are integers in the range 0-100. The categorical variables are: gender, ethnicity, and prestige. The numeric variables are: years of experience, skill score, project score, and experience score. All categorical variables were setup such that “Unknown” was the reference category. The numeric variables, like the resume score, are in range 0-100, with the exception of years experience which is a positive decimal.</p>
+<p>Next there was analysis of interation effects and determining if any interactions were considered statistically significant. If the interaction was considered significant, then the interaction was added to the model. Additionally, the model diagnostics were conducted to ensure that the model’s assumptions were met. Specifically, the model was checked for normality in the residuals and multicollinearity by using the Shapiro-Wilk test and variance inflation factor, respectively. Interaction effects were added to the model if they were statistically significant. Due to multicolinearity issues, the model used a ridge regression.</p>
 </section>
 </section>
 <section id="results-and-discussion" class="level1">
 <h1>3 Results and Discussion</h1>
+<section id="initial-modeling" class="level2">
+<h2 class="anchored" data-anchor-id="initial-modeling">Initial Modeling</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 21%">
+<col style="width: 8%">
+<col style="width: 23%">
+<col style="width: 7%">
+<col style="width: 20%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Predictor</strong></th>
+<th style="text-align: right;"><strong>Meta <span class="math inline">\(\beta\)</span> (SE)</strong></th>
+<th style="text-align: left;"><strong>p-value</strong></th>
+<th style="text-align: right;"><strong>Microsoft <span class="math inline">\(\beta\)</span> (SE)</strong></th>
+<th style="text-align: left;"><strong>p-value</strong></th>
+<th style="text-align: right;"><strong>IBM <span class="math inline">\(\beta\)</span> (SE)</strong></th>
+<th style="text-align: left;"><strong>p-value</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Intercept</strong></td>
+<td style="text-align: right;"><span class="math inline">\(93.81\)</span> (<span class="math inline">\(4.934\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(&lt;2\times10^{-16}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(32.87\)</span> (<span class="math inline">\(4.896\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(3.07\times10^{-11}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(77.70\)</span> (<span class="math inline">\(6.487\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(&lt;2\times10^{-16}\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>Gender</strong></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td>Female</td>
+<td style="text-align: right;"><span class="math inline">\(-6.319\)</span> (<span class="math inline">\(4.681\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.177\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.409\)</span> (<span class="math inline">\(2.718\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.376\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.253\)</span> (<span class="math inline">\(2.923\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.441\)</span></td>
+</tr>
+<tr class="even">
+<td>Male</td>
+<td style="text-align: right;"><span class="math inline">\(-6.077\)</span> (<span class="math inline">\(4.681\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.194\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.078\)</span> (<span class="math inline">\(2.725\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.446\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-6.902\)</span> (<span class="math inline">\(2.910\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.018\)</span></td>
+</tr>
+<tr class="odd">
+<td><strong>Ethnicity</strong></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td>African American</td>
+<td style="text-align: right;"><span class="math inline">\(-0.9453\)</span> (<span class="math inline">\(1.022\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.355\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.1997\)</span> (<span class="math inline">\(3.154\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.950\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.545\)</span> (<span class="math inline">\(5.715\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.135\)</span></td>
+</tr>
+<tr class="odd">
+<td>Asian</td>
+<td style="text-align: right;"><span class="math inline">\(-0.3434\)</span> (<span class="math inline">\(1.252\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.784\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.761\)</span> (<span class="math inline">\(3.536\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.435\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(6.521\)</span> (<span class="math inline">\(6.675\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.329\)</span></td>
+</tr>
+<tr class="even">
+<td>Caucasian</td>
+<td style="text-align: right;"><span class="math inline">\(-0.8673\)</span> (<span class="math inline">\(0.960\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.367\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.0981\)</span> (<span class="math inline">\(3.058\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.974\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(11.31\)</span> (<span class="math inline">\(5.456\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.039\)</span></td>
+</tr>
+<tr class="odd">
+<td>Hispanic</td>
+<td style="text-align: right;"><span class="math inline">\(0.3980\)</span> (<span class="math inline">\(0.997\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.690\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.7414\)</span> (<span class="math inline">\(3.103\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.811\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10.61\)</span> (<span class="math inline">\(5.618\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.059\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>Prestige</strong></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td>High</td>
+<td style="text-align: right;"><span class="math inline">\(-0.4145\)</span> (<span class="math inline">\(0.650\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.524\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.214\)</span> (<span class="math inline">\(3.122\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.697\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-3.686\)</span> (<span class="math inline">\(2.145\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.086\)</span></td>
+</tr>
+<tr class="even">
+<td>Medium</td>
+<td style="text-align: right;"><span class="math inline">\(0.1902\)</span> (<span class="math inline">\(0.541\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.725\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.1486\)</span> (<span class="math inline">\(2.023\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.941\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.6868\)</span> (<span class="math inline">\(1.786\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.701\)</span></td>
+</tr>
+<tr class="odd">
+<td>Low</td>
+<td style="text-align: right;"><span class="math inline">\(-0.0209\)</span> (<span class="math inline">\(0.516\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.968\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.422\)</span> (<span class="math inline">\(3.481\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.326\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-3.462\)</span> (<span class="math inline">\(1.698\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.042\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>Scores</strong></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td>Skills</td>
+<td style="text-align: right;"><span class="math inline">\(0.0007\)</span> (<span class="math inline">\(0.009\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.933\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1147\)</span> (<span class="math inline">\(0.045\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.011\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.1036\)</span> (<span class="math inline">\(0.046\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.024\)</span></td>
+</tr>
+<tr class="even">
+<td>Projects</td>
+<td style="text-align: right;"><span class="math inline">\(0.0081\)</span> (<span class="math inline">\(0.009\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.345\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1480\)</span> (<span class="math inline">\(0.021\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(6.75\times10^{-12}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.0763\)</span> (<span class="math inline">\(0.040\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.058\)</span></td>
+</tr>
+<tr class="odd">
+<td>Experience</td>
+<td style="text-align: right;"><span class="math inline">\(-0.0009\)</span> (<span class="math inline">\(0.011\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.932\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.3693\)</span> (<span class="math inline">\(0.028\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(&lt;2\times10^{-16}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.0804\)</span> (<span class="math inline">\(0.037\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.028\)</span></td>
+</tr>
+<tr class="even">
+<td>Years Experience</td>
+<td style="text-align: right;"><span class="math inline">\(0.0168\)</span> (<span class="math inline">\(0.056\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.764\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.2541\)</span> (<span class="math inline">\(0.083\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(0.002\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.7438\)</span> (<span class="math inline">\(0.182\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(4.73\times10^{-5}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Let’s interpret all significant predictors at a value of <span class="math inline">\(\alpha=0.05\)</span>. For the Meta model, there were not any significant predictors, instead only the intercept was significant. Specifically for the Meta model, when all predictors are at <span class="math inline">\(0\)</span> and the categorical variables are at their reference group (Unknown), then the average expected score is <span class="math inline">\(93.81\)</span>. This suggests either the response variable (resume score) is either independent of the predictors or some transformations need to be applied to the response variable and/or the predictors.</p>
+<p>For the Microsoft model, the only statistically significant predictors were the numerical ones. In the context of this problem, this is most likely a good thing as it suggests that the Microsoft language model is unbiased towards gender, ethnicity and institutional prestige. For the experience score predictor, the linear regression resulted in a coefficient of <span class="math inline">\(0.3693\)</span>, suggesting that the resume score increases by that value on average per unit increase of the experience score while holding all other predictors constant. Similarly, the skills score increased the resume score by <span class="math inline">\(0.1147\)</span> on average per unit increase of skills score while holding the other predictors constant. Project score also increased the resume score by <span class="math inline">\(0.1480\)</span> on average per unit increase of project score while holding the other predictors constant. Most surprising to me was the years experience had a negative coefficient, suggesting that the resume score decreased by <span class="math inline">\(0.2541\)</span> per year increase of experience while all other predictors remained constant. This could suggest that the Microsoft model is discriminating against older individuals who are closer to retirement but more data analysis would need to be done.</p>
+<p>The IBM model was quite sporadic with its significant predictors. All the categorical variables (gender, prestige, and ethnicity) were significant as well as the skills and experience scores and years experience. For ethnicity, knowing the candidate was white (compared to unknown ethnicity) increased the resume score by an average of <span class="math inline">\(11.31\)</span> while holding all other predictors constant. This was also the highest increase for any categorical variable across any model. For gender, knowing the candidate was male (compared to unknown gender) decreased the resume score by an average of <span class="math inline">\(6.902\)</span> while holding all other predictors constant. This was the greatest decrease for any categorical predictor across all models. For prestige, knowing the candidate was from a school with less prestige (compared to unknown prestige) decreased the resume score by an average of <span class="math inline">\(3.462\)</span> while holding all other variables constant.</p>
+</section>
+<section id="model-improvements-and-diagnostics" class="level2">
+<h2 class="anchored" data-anchor-id="model-improvements-and-diagnostics">Model Improvements and Diagnostics</h2>
+<p>First I applied the Shapiro-Wilk test to all the models to determine if the normality assumption is satisfied. All models resulted in p-values less than <span class="math inline">\(\alpha=0.05\)</span> which suggests that none of the residuals are normally distributted. More specifically, the Meta and IBM models had p-values less than <span class="math inline">\(2.2\times 10^{-16}\)</span> and the Microsoft model had a p-value of <span class="math inline">\(5.042\times 10^{-13}\)</span>. Thus, I will apply a box-cox transformation in an attempt to make the residuals normally distributed.</p>
+<p>Next according to the VIF test, the IBM model had VIF’s greater than <span class="math inline">\(10\)</span> for both the Caucasian (<span class="math inline">\(16.24\)</span>) and Hispanic (<span class="math inline">\(11.22\)</span>), suggesting that multicolinearity is present in the IBM model. For the Meta model, the Gender variable had VIFs greater than <span class="math inline">\(10\)</span> (both Male and Female had VIFs greater than <span class="math inline">\(134\)</span>) suggesting the Meta model may also be subject to multicolinearity. Lastly the microsoft model had VIFs of over <span class="math inline">\(20\)</span> for the gender column and many ethnicity categories a lso had VIFs greater than <span class="math inline">\(10\)</span>. Thus all models were subject to multicolinearity and will use Ridge Regression to help mitigate the effects of multicolinearity.</p>
+<p>To test the presence and significance of interaction effects, I fitted new models on each of the datasetes with the same formula mentioned in section 2.3 with the addition of the interaction term. Specifically the interaction terms added were Ethnicity<span class="math inline">\(\times\)</span>Gender, Gender<span class="math inline">\(\times\)</span>Prestige, and Prestige<span class="math inline">\(\times\)</span>Gender. Each of these interaction terms were added one at a time and compared to the original formula using an anova test to determine if the interaction term was significant. All anova tests had p-values greater than <span class="math inline">\(\alpha=0.05\)</span> for each interaction term in all of the models so none of the interaction effects were significant and will not be added to the final modeling process.</p>
+</section>
+<section id="improved-model" class="level2">
+<h2 class="anchored" data-anchor-id="improved-model">Improved Model</h2>
+<p>When performing the box-cox transformation, all models resulted in <span class="math inline">\(\lambda=2\)</span> which will then be used to transform the response for the ridge regression. Thus, all the ridge regressions will be performed on Score<span class="math inline">\(^2\)</span> as the response variable. Note this <span class="math inline">\(\lambda=2\)</span> refers to the exponent for our response variable and not the weight of the penalty term in the ridge regression. It is also important to center and scale all numerical predictors during ridge regression because ridge regression is sensitive to the scale of inputs.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] NA
+
+$ibm
+[1] 0.3303358
+
+$meta
+[1] 51.00987
+
+$microsoft
+[1] 0.06193337</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>15 x 1 sparse Matrix of class "dgCMatrix"
+                                    s0
+(Intercept)                0.000253654
+skill_score               -0.055699280
+project_score             -0.052561127
+experience_score          -0.056810441
+years_experience          -0.115861021
+genderUnknown              0.159362922
+genderFemale               0.072829425
+genderMale                -0.105149994
+ethnicityAfrican American -0.038838561
+ethnicityAsian            -0.111666122
+ethnicityCaucasian         0.077141310
+ethnicityHispanic          0.043138205
+prestigeHigh              -0.109212148
+prestigeLow               -0.126915407
+prestigeMedium             0.051515811</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>15 x 1 sparse Matrix of class "dgCMatrix"
+                                     s0
+(Intercept)                4.221920e-04
+skill_score                6.926210e-05
+project_score              4.841967e-04
+experience_score           6.145402e-05
+years_experience           3.478145e-04
+genderUnknown              1.747399e-02
+genderFemale              -1.073290e-04
+genderMale                -2.484210e-05
+ethnicityAfrican American -1.438408e-03
+ethnicityAsian             5.323934e-04
+ethnicityCaucasian        -1.913997e-03
+ethnicityHispanic          3.303882e-03
+prestigeHigh              -1.295985e-03
+prestigeLow               -3.137222e-05
+prestigeMedium             5.836672e-04</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>15 x 1 sparse Matrix of class "dgCMatrix"
+                                     s0
+(Intercept)               -0.0049616235
+skill_score                0.0748171125
+project_score              0.2199991364
+experience_score           0.3779524405
+years_experience          -0.0718451144
+genderUnknown              0.1528079920
+genderFemale              -0.0059499910
+genderMale                -0.0005078563
+ethnicityAfrican American -0.0093279466
+ethnicityAsian             0.2588191130
+ethnicityCaucasian         0.0106730890
+ethnicityHispanic         -0.0489825202
+prestigeHigh               0.0758314275
+prestigeLow                0.2693877259
+prestigeMedium            -0.0063502229</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "ibm"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.0676641</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.0767305</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "meta"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.0004594969</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.01016942</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "microsoft"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.3219432</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.3121289</code></pre>
+</div>
+</div>
+</section>
 </section>
 <section id="conclusion" class="level1">
-<h1>4 Conclusion</h1>
-</section>
-<section id="references" class="level1">
-<h1>5 References</h1>
+<h1>Conclusion</h1>
 </section>
 
 

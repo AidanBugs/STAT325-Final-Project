@@ -11,10 +11,13 @@ title-block-banner: true
 execute:
   echo: false
   warning: false
-toc: true
 format: 
+  html:
+    toc: true
+    mainfont: Times New Roman
+    fontsize: 11pt
   pdf: 
-    documentclass: report
+    documentclass: article
     geometry:
       - top=30mm
       - left=20mm
@@ -24,8 +27,6 @@ format:
     fontsize: 12pt
     colorlinks: true
     date-format: long
-  html:
-    toc: true
 website:
   favicon: "images\\CWRU.jpg"
 ---
@@ -142,986 +143,314 @@ For creating the score datasets themselves, the resumes were scored by the model
 The models used for this project include IBM's *granite3.3:8b*, Microsoft's *Phi4:14b* and Meta's *llama3.1:8b*. These models were choosen because they are highly rated models despite the lower paramter size and are all open source. 
 
 ## 2.3 Statistical Tools and Approach
-### 2.3a Exploratory Data Analysis
-After the resumes have been processed by the language models, there was some data cleaning to ensure the models followed the instructions. Once the data has been cleaned, exploratory data analysis was conducted to get a better understanding of the data distributions and relationships. Pi charts were used to show the distribution of the categorical variables and histograms were used to show the distribution of the numeric variables for each of the datasets (IBM, Microsoft, and Meta).
+After the resumes have been processed by the language models, there was some data cleaning to ensure the models followed the instructions. The initial approach was to use linear regression to predict the resume score from all of the other variables in the dataset. The formula used for this model was: `score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience`. Here, the response variable is the resume score which are integers in the range 0-100. The categorical variables are: gender, ethnicity, and prestige. The numeric variables are: years of experience, skill score, project score, and experience score. All categorical variables were setup such that "Unknown" was the reference category. The numeric variables, like the resume score, are in range 0-100, with the exception of years experience which is a positive decimal.
 
-### 2.3b Initial Modeling Approach
-The initial approach was to use linear regression to predict the resume score from all of the other variables in the dataset. The formula used for this model was: `score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience`. Here, the response variable is the resume score which are integers in the range 0-100. The categorical variables are: gender, ethnicity, and prestige. The numeric variables are: years of experience, skill score, project score, and experience score. All categorical variables were setup such that "Unknown" was the reference category. The numeric variables, like the resume score, are in range 0-100.
-
-### 2.3c Model Diagnostics 
-This is where there was analysis of interation effects and determining if any interactions were considered statistically significant. If the interaction was considered significant, then the interaction was added to the model. Additionally, the model diagnostics were conducted to ensure that the model's assumptions were met. Specifically, the model was checked for normality, homoscedasticity, and multicollinearity by using the Shapiro-Wilk test, Browne-Forsythe test, and variance inflation factor, respectively.
-
-### 2.3d Model Refinement
-Here, interaction effects were added to the model if they were statistically significant. Due to multicolinearity issues, the model used a ridge regression. 
+Next there was analysis of interation effects and determining if any interactions were considered statistically significant. If the interaction was considered significant, then the interaction was added to the model. Additionally, the model diagnostics were conducted to ensure that the model's assumptions were met. Specifically, the model was checked for normality in the residuals and multicollinearity by using the Shapiro-Wilk test and variance inflation factor, respectively. Interaction effects were added to the model if they were statistically significant. Due to multicolinearity issues, the model used a ridge regression. 
 
 # 3 Results and Discussion
+## Initial Modeling
+```{r}
+#| include: false
+ibm = read.csv("data/granite3.3_8b.csv")
+ibm$gender = relevel(factor(ibm$gender), ref = "Unknown")
+ibm$ethnicity = relevel(factor(ibm$ethnicity), ref = "Unknown")
+ibm$prestige = relevel(factor(ibm$prestige), ref = "Unknown")
+meta = read.csv("data/llama3.1_8b.csv")
+meta$gender = relevel(factor(meta$gender), ref = "Unknown")
+meta$ethnicity = relevel(factor(meta$ethnicity), ref = "Unknown")
+meta$prestige = relevel(factor(meta$prestige), ref = "Unknown")
+microsoft = read.csv("data/phi4_14b.csv")
+microsoft$gender = relevel(factor(microsoft$gender), ref = "Unknown")
+microsoft$ethnicity = relevel(factor(microsoft$ethnicity), ref = "Unknown")
+microsoft$prestige = relevel(factor(microsoft$prestige), ref = "Unknown")
 
-> Note that the results are not final and are subject to change. Additionally, the format will be updated 
+models=NA
 
-## 3.1 Data Exploration
-```{python}
-import statsmodels.formula.api as smf
-import scipy.stats as stats
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
+models$ibm = lm(score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=ibm)
+summary(models$ibm)
+models$meta = lm(score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=meta)
+summary(models$meta)
+models$microsoft = lm(score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=microsoft)
+summary(models$microsoft)
+```
 
-plt.style.use('bmh')
-def load_and_clean_data():
-    datasets = {}
-    
-    datasets['ibm'] = pd.read_csv("data/granite3.3_8b.csv")
-    datasets['meta'] = pd.read_csv("data/llama3.1_8b.csv")
-    datasets['microsoft'] = pd.read_csv("data/phi4_14b.csv")
-    
-    return datasets
+| **Predictor** | **Meta $\beta$ (SE)** | **p-value** | **Microsoft $\beta$ (SE)** | **p-value** | **IBM $\beta$ (SE)** | **p-value** |
+|--------------|-----------------------------:|:-----------|-------------------------------:|:----------|---------------------------:|:----------|
+| **Intercept** | $93.81$ ($4.934$) | $<2\times10^{-16}$ | $32.87$ ($4.896$) | $3.07\times10^{-11}$ | $77.70$ ($6.487$) | $<2\times10^{-16}$ |
+| **Gender**  | | | | | | |
+| Female | $-6.319$ ($4.681$) | $0.177$ | $-2.409$ ($2.718$) | $0.376$ | $-2.253$ ($2.923$) | $0.441$ |
+| Male | $-6.077$ ($4.681$) | $0.194$ | $-2.078$ ($2.725$) | $0.446$ | $-6.902$ ($2.910$) | $0.018$ |
+| **Ethnicity**  | | | | | | |
+| African American | $-0.9453$ ($1.022$) | $0.355$ | $-0.1997$ ($3.154$) | $0.950$ | $8.545$ ($5.715$) | $0.135$ |
+| Asian | $-0.3434$ ($1.252$) | $0.784$ | $2.761$ ($3.536$) | $0.435$ | $6.521$ ($6.675$) | $0.329$ |
+| Caucasian | $-0.8673$ ($0.960$) | $0.367$ | $-0.0981$ ($3.058$) | $0.974$ | $11.31$ ($5.456$) | $0.039$ |
+| Hispanic | $0.3980$ ($0.997$) | $0.690$ | $-0.7414$ ($3.103$) | $0.811$ | $10.61$ ($5.618$) | $0.059$ |
+| **Prestige**  | | | | | | |
+| High | $-0.4145$ ($0.650$) | $0.524$ | $1.214$ ($3.122$) | $0.697$ | $-3.686$ ($2.145$) | $0.086$ |
+| Medium | $0.1902$ ($0.541$) | $0.725$ | $-0.1486$ ($2.023$) | $0.941$ | $0.6868$ ($1.786$) | $0.701$ |
+| Low | $-0.0209$ ($0.516$) | $0.968$ | $3.422$ ($3.481$) | $0.326$ | $-3.462$ ($1.698$) | $0.042$ |
+| **Scores**  | | | | | | |
+| Skills | $0.0007$ ($0.009$) | $0.933$ | $0.1147$ ($0.045$) | $0.011$ | $-0.1036$ ($0.046$) | $0.024$ |
+| Projects | $0.0081$ ($0.009$) | $0.345$ | $0.1480$ ($0.021$) | $6.75\times10^{-12}$ | $-0.0763$ ($0.040$) | $0.058$ |
+| Experience | $-0.0009$ ($0.011$) | $0.932$ | $0.3693$ ($0.028$) | $<2\times10^{-16}$ | $-0.0804$ ($0.037$) | $0.028$ |
+| Years Experience | $0.0168$ ($0.056$) | $0.764$ | $-0.2541$ ($0.083$) | $0.002$ | $-0.7438$ ($0.182$) | $4.73\times10^{-5}$ |
 
-def preprocess_data(datasets):
-    def set_categorical_order(df):
-        if 'gender' in df.columns:
-            df['gender'] = pd.Categorical(df['gender'], 
-                                        categories=['Unknown', 'Male', 'Female'], 
-                                        ordered=False)
-        
-        if 'ethnicity' in df.columns:
-            df['ethnicity'] = pd.Categorical(df['ethnicity'],
-                                           categories=['Unknown', 'Caucasian', 'African American', 'Asian', 'Hispanic'],
-                                           ordered=False)
-        
-        if 'prestige' in df.columns:
-            # Set specific order for prestige
-            prestige_order = ['Unknown', 'Low', 'Medium', 'High']
-            existing_cats = [cat for cat in prestige_order if cat in df['prestige'].unique()]
-            df['prestige'] = pd.Categorical(df['prestige'], 
-                                          categories=existing_cats,
-                                          ordered=True)
-        return df
-    
-    for name, df in datasets.items():
-        datasets[name] = set_categorical_order(df)
-    return datasets
+Let's interpret all significant predictors at a value of $\alpha=0.05$. For the Meta model, there were not any significant predictors, instead only the intercept was significant. Specifically for the Meta model, when all predictors are at $0$ and the categorical variables are at their reference group (Unknown), then the average expected score is $93.81$. This suggests either the response variable (resume score) is either independent of the predictors or some transformations need to be applied to the response variable and/or the predictors. 
 
-# Load and preprocess data
-datasets = load_and_clean_data()
-datasets = preprocess_data(datasets)
+For the Microsoft model, the only statistically significant predictors were the numerical ones. In the context of this problem, this is most likely a good thing as it suggests that the Microsoft language model is unbiased towards gender, ethnicity and institutional prestige. For the experience score predictor, the linear regression resulted in a coefficient of $0.3693$, suggesting that the resume score increases by that value on average per unit increase of the experience score while holding all other predictors constant. Similarly, the skills score increased the resume score by $0.1147$ on average per unit increase of skills score while holding the other predictors constant. Project score also increased the resume score by $0.1480$ on average per unit increase of project score while holding the other predictors constant. Most surprising to me was the years experience had a negative coefficient, suggesting that the resume score decreased by $0.2541$ per year increase of experience while all other predictors remained constant. This could suggest that the Microsoft model is discriminating against older individuals who are closer to retirement but more data analysis would need to be done. 
 
-# Create merged dataframe with Company column
-merged_data = []
-company_mapping = {'ibm': 'IBM', 'meta': 'Meta', 'microsoft': 'Microsoft'}
+The IBM model was quite sporadic with its significant predictors. All the categorical variables (gender, prestige, and ethnicity) were significant as well as the skills and experience scores and years experience. For ethnicity, knowing the candidate was white (compared to unknown ethnicity) increased the resume score by an average of $11.31$ while holding all other predictors constant. This was also the highest increase for any categorical variable across any model. For gender, knowing the candidate was male (compared to unknown gender) decreased the resume score by an average of $6.902$ while holding all other predictors constant. This was the greatest decrease for any categorical predictor across all models. For prestige, knowing the candidate was from a school with less prestige (compared to unknown prestige) decreased the resume score by an average of $3.462$ while holding all other variables constant. 
 
-for name, df in datasets.items():
-    df_copy = df.copy()
-    df_copy['Company'] = company_mapping.get(name, name.title())
-    merged_data.append(df_copy)
+## Model Improvements and Diagnostics
+```{r}
+#| include: false
+library(onewaytests)
 
-merged_df = pd.concat(merged_data, ignore_index=True)
+shapiro.test(models$ibm$residuals)
+shapiro.test(models$meta$residuals)
+shapiro.test(models$microsoft$residuals)
+```
 
-# Create histograms using sns.histplot
-fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-fig.suptitle('Distribution of Scores Across Models', fontsize=16, fontweight='bold')
+First I applied the Shapiro-Wilk test to all the models to determine if the normality assumption is satisfied. All models resulted in p-values less than $\alpha=0.05$ which suggests that none of the residuals are normally distributted. More specifically, the Meta and IBM models had p-values less than $2.2\times 10^{-16}$ and the Microsoft model had a p-value of $5.042\times 10^{-13}$. Thus, I will apply a box-cox transformation in an attempt to make the residuals normally distributed.
 
-columns_to_plot = ['score', 'skill_score', 'project_score', 'experience_score']
-axes_flat = axes.flatten()
+```{r}
+#| include: false
+library(faraway)
 
-# Use fixed bins from 0 to 100 in increments of 4
-fixed_bins = np.arange(0, 104, 4)  # 0, 4, 8, ..., 100
+vif(models$ibm)
 
-for idx, col in enumerate(columns_to_plot):
-    ax = axes_flat[idx]
-    
-    # Create histogram using sns.histplot
-    sns.histplot(data=merged_df, x=col, hue='Company', bins=50, 
-                 ax=ax, edgecolor='black', alpha=0.7, stat='count')
-    
-    ax.set_xlabel(col.replace('_', ' ').title(), fontweight='bold')
-    ax.set_ylabel('Frequency', fontweight='bold')
-    ax.set_title(f'Distribution of {col.replace("_", " ").title()}', fontweight='bold')
-    ax.grid(alpha=0.3)
+vif(models$meta)
 
-plt.tight_layout()
-plt.show()
+vif(models$microsoft)
+```
+
+Next according to the VIF test, the IBM model had VIF's greater than $10$ for both the Caucasian ($16.24$) and Hispanic ($11.22$), suggesting that multicolinearity is present in the IBM model. For the Meta model, the Gender variable had VIFs greater than $10$ (both Male and Female had VIFs greater than $134$) suggesting the Meta model may also be subject to multicolinearity. Lastly the microsoft model had VIFs of over $20$ for the gender column and  many ethnicity categories a lso had VIFs greater than $10$. Thus all models were subject to multicolinearity and will use Ridge Regression to help mitigate the effects of multicolinearity.
+
+
+```{r}
+#| include: false
+gender_ethnicity_models = NA
+gender_ethnicity_models$ibm = lm(score ~ gender*ethnicity + gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=ibm)
+gender_ethnicity_models$meta = lm(score ~ gender*ethnicity + gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=meta)
+gender_ethnicity_models$microsoft = lm(score ~ gender*ethnicity + gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=microsoft)
+
+anova(models$ibm, gender_ethnicity_models$ibm, test="F")
+anova(models$meta, gender_ethnicity_models$meta, test="F")
+anova(models$microsoft, gender_ethnicity_models$microsoft, test="F")
+
+gender_presitge_models = NA
+gender_presitge_models$ibm = lm(score ~ gender*prestige + gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=ibm)
+gender_presitge_models$meta = lm(score ~ gender*prestige + gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=meta)
+gender_presitge_models$microsoft = lm(score ~ gender*prestige + gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=microsoft)
+
+anova(models$ibm, gender_presitge_models$ibm, test="F")
+anova(models$meta, gender_presitge_models$meta, test="F")
+anova(models$microsoft, gender_presitge_models$microsoft, test="F")
+
+ethnicity_presitge_models = NA
+ethnicity_presitge_models$ibm = lm(score ~ prestige*ethnicity + gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=ibm)
+ethnicity_presitge_models$meta = lm(score ~ prestige*ethnicity + gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=meta)
+ethnicity_presitge_models$microsoft = lm(score ~ prestige*ethnicity + gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience, data=microsoft)
+
+anova(models$ibm, ethnicity_presitge_models$ibm, test="F")
+anova(models$meta, ethnicity_presitge_models$meta, test="F")
+anova(models$microsoft, ethnicity_presitge_models$microsoft, test="F")
+```
+
+To test the presence and significance of interaction effects, I fitted new models on each of the datasetes with the same formula mentioned in section 2.3 with the addition of the interaction term. Specifically the interaction terms added were Ethnicity$\times$Gender, Gender$\times$Prestige, and Prestige$\times$Gender. Each of these interaction terms were added one at a time and compared to the original formula using an anova test to determine if the interaction term was significant. All anova tests had p-values greater than $\alpha=0.05$ for each interaction term in all of the models so none of the interaction effects were significant and will not be added to the final modeling process.
+
+## Improved Model
+```{r}
+#| include: false
+
+library(MASS)
+range(ibm$score)
+ibm$score_new = ibm$score + 0.0000001
+range(meta$score)
+range(microsoft$score)
+
+bc = NA
+
+bc$ibm = boxcox(lm(ibm$score_new ~ 1))
+bc$meta = boxcox(lm(meta$score ~ 1))
+bc$microsoft = boxcox(lm(microsoft$score~ 1))
+
+lambda = NA
+lambda$ibm <- bc$ibm$x[which.max(bc$ibm$y)]
+lambda$meta <- bc$meta$x[which.max(bc$meta$y)]
+lambda$microsoft <- bc$microsoft$x[which.max(bc$microsoft$y)]
+
+print(lambda$ibm)
+print(lambda$meta)
+print(lambda$microsoft)
+```
+
+When performing the box-cox transformation, all models resulted in $\lambda=2$ which will then be used to transform the response for the ridge regression. Thus, all the ridge regressions will be performed on Score$^2$ as the response variable. Note this $\lambda=2$ refers to the exponent for our response variable and not the weight of the penalty term in the ridge regression. It is also important to center and scale all numerical predictors during ridge regression because ridge regression is sensitive to the scale of inputs. 
+
+```{r}
+X = NA
+
+X$ibm = subset(ibm, select=-c(score, name, gender, ethnicity, prestige, score_new))
+X$meta = subset(meta, select=-c(score, name, gender, ethnicity, prestige))
+X$microsoft = subset(microsoft, select=-c(score, name, gender, ethnicity, prestige))
+
+Cat = NA
+
+Cat$ibm = subset(ibm, select=c(gender,ethnicity,prestige))
+Cat$meta = subset(meta, select=c(gender,ethnicity,prestige))
+Cat$microsoft = subset(microsoft, select=c(gender,ethnicity,prestige))
+
+Y = NA
+
+Y$ibm = I(ibm$score^2)
+Y$meta = I(meta$score^2)
+Y$microsoft = I(microsoft$score^2)
+
+Y$ibm = scale(Y$ibm, center = T, scale = T)
+Y$meta = scale(Y$meta, center = T, scale = T)
+Y$microsoft = scale(Y$microsoft, center = T, scale = T)
+
+X$ibm <- scale(X$ibm, center = T, scale=T)  ## always remember to standardize X
+X$meta <- scale(X$meta, center = T, scale=T)  ## always remember to standardize X
+X$microsoft <- scale(X$microsoft, center = T, scale=T)  ## always remember to standardize X
+
+X$ibm = cbind(X$ibm, Cat$ibm)
+X$meta = cbind(X$meta, Cat$meta)
+X$microsoft = cbind(X$microsoft, Cat$microsoft)
+
+X$ibm <- model.matrix(~ . - 1, data = X$ibm)
+X$meta <- model.matrix(~ . - 1, data = X$meta)
+X$microsoft <- model.matrix(~ . - 1, data = X$microsoft)
+
+library(glmnet)
+
+opt_lambda <- NA
+
+
+# Set up the plotting layout
+par(mfrow = c(1, 3), mar = c(3, 4, 2, 1), oma = c(0, 0, 2, 0))
+
+# Function to create custom CV plot
+plot_cv_custom <- function(cv_fit, title, color) {
+  # Extract values
+  lambda <- cv_fit$lambda
+  log_lambda <- log(lambda)
+  cvm <- cv_fit$cvm  # Mean MSE
+  cvsd <- cv_fit$cvsd  # Standard deviation
+  
+  # Calculate bounds (mean ± 2*SD)
+  upper_bound <- cvm + 2 * cvsd
+  lower_bound <- cvm - 2 * cvsd
+  
+  # Find y-axis limits
+  ylims <- range(c(lower_bound, upper_bound))
+  
+  # Create empty plot
+  plot(1, type = "n", 
+       xlim = range(log_lambda), 
+       ylim = ylims,
+       xlab = "log(λ)",
+       ylab = "Mean-Squared Error",
+       main = title,
+       cex.main = 1.2,
+       font.main = 2,
+       col.main = color)
+  
+  # Add ±2 SD bands as dashed lines
+  lines(log_lambda, upper_bound, lty = 2, col = "gray60", lwd = 1.5)
+  lines(log_lambda, lower_bound, lty = 2, col = "gray60", lwd = 1.5)
+  
+  # Add mean MSE line (solid, thicker)
+  lines(log_lambda, cvm, lwd = 3, col = color)
+  
+  # Add optimal lambda vertical line
+  abline(v = log(cv_fit$lambda.min), lty = 3, col = "red", lwd = 2)
+}
+
+# IBM plot
+cv_fit_ibm <- cv.glmnet(X$ibm, Y$ibm, alpha = 0)
+opt_lambda$ibm <- cv_fit_ibm$lambda.min
+plot_cv_custom(cv_fit_ibm, "IBM Cross-Validation Results", "darkblue")
+
+# Meta plot
+cv_fit_meta <- cv.glmnet(X$meta, Y$meta, alpha = 0)
+opt_lambda$meta <- cv_fit_meta$lambda.min
+plot_cv_custom(cv_fit_meta, "Meta Cross-Validation Results", "darkgreen")
+
+# Microsoft plot
+cv_fit_microsoft <- cv.glmnet(X$microsoft, Y$microsoft, alpha = 0)
+opt_lambda$microsoft <- cv_fit_microsoft$lambda.min
+plot_cv_custom(cv_fit_microsoft, "Microsoft Cross-Validation Results", "darkred")
+
+# Add overall title
+mtext("Ridge Regression Cross-Validation Results", 
+      outer = TRUE, cex = 1.5, font = 2, line = 0.5)
+
+# Reset plotting parameters
+par(mfrow = c(1, 1))
+```
+
+Next was performing Cross-Validation for the ridge regression to find the optimal parameter for the penalty term.
+
+```{r}
+ridge_models = NA
+
+print(opt_lambda)
+ridge_models$ibm = glmnet(X$ibm, Y$ibm, alpha=0, lambda= opt_lambda$ibm)
+coef(ridge_models$ibm)
+ridge_models$meta = glmnet(X$meta, Y$meta, alpha=0, lambda= opt_lambda$meta)
+coef(ridge_models$meta)
+ridge_models$microsoft = glmnet(X$microsoft, Y$microsoft, alpha=0, lambda= opt_lambda$microsoft)
+coef(ridge_models$microsoft)
 
 ```
 
-```{python}
-# Create pie charts for categorical variables
-categorical_vars = ['gender', 'ethnicity', 'prestige']
+```{r}
+#use fitted best model to make predictions
+y_predicted <- predict(ridge_models$ibm, s = opt_lambda$ibm, newx = X$ibm)
 
-for cat_var in categorical_vars:
-    if cat_var not in merged_df.columns:
-        continue
-    
-    # Create 1x3 grid for the three models
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    fig.suptitle(f'{cat_var.title()} Distribution by Model', fontsize=16, fontweight='bold')
-    
-    companies = merged_df['Company'].unique()
-    
-    for idx, company in enumerate(sorted(companies)):
-        ax = axes[idx]
-        
-        # Filter data for this company
-        company_data = merged_df[merged_df['Company'] == company]
-        value_counts = company_data[cat_var].value_counts()
-        
-        # Create pie chart without labels
-        ax.pie(value_counts.values, autopct='%1.1f%%',
-               startangle=90, textprops={'fontsize': 10, 'fontweight': 'bold'})
-        ax.set_title(f'{company}', fontweight='bold', fontsize=12)
-    
-    # Add legend to the rightmost pie chart
-    axes[-1].legend(value_counts.index, loc='upper left', bbox_to_anchor=(1, 1),
-                    fontsize=10, frameon=True, title=cat_var.title())
-    
-    plt.tight_layout()
-    plt.show()
+#find SST and SSE
+sst <- sum((Y$ibm - mean(Y$ibm))^2)
+sse <- sum((y_predicted - Y$ibm)^2)
 
-```
+#find R-Squared
+rsq <- 1 - sse/sst
 
-## 3.2 Initial Model Development
+print("ibm")
+rsq
+summary(models$ibm)$r.squared
 
-```{python}
-def create_initial_models(datasets):
-    """Create initial linear regression models"""
-    models = {}
-    
-    formula = 'score ~ C(gender, Treatment(reference="Unknown")) + C(ethnicity, Treatment(reference="Unknown")) + C(prestige, Treatment(reference="Unknown")) + skill_score + project_score + experience_score + years_experience'
-    
-    for name, data in datasets.items():
-        try:
-            models[name] = smf.ols(formula, data=data).fit()
-            print(f"✓ Created initial model for {name}")
-            print(f"  R-squared: {models[name].rsquared:.4f}")
-        except Exception as e:
-            print(f"✗ Error creating model for {name}: {e}")
-    
-    return models
 
-# Create initial models
-initial_models = create_initial_models(datasets)
+#use fitted best model to make predictions
+y_predicted <- predict(ridge_models$meta, s = opt_lambda$meta, newx = X$meta)
 
-```
+#find SST and SSE
+sst <- sum((Y$meta - mean(Y$meta))^2)
+sse <- sum((y_predicted - Y$meta)^2)
 
-## 3.3 Interaction Effects and Model Refinement
+#find R-Squared
+rsq <- 1 - sse/sst
 
-```{python}
-def test_interaction_effects(datasets):
-    interaction_results = {}
-    
-    # Define interaction pairs to test
-    interaction_pairs = [
-        ('gender', 'ethnicity'),
-        ('ethnicity', 'prestige'),
-        ('prestige', 'gender')
-    ]
-    
-    for name, data in datasets.items():
-        print(f"\nTesting interactions for {name}:")
-        interaction_results[name] = {}
-        
-        for var1, var2 in interaction_pairs:
-            # Create model with interaction term
-            interaction_formula = f'score ~ C(gender, Treatment(reference="Unknown")) + C(ethnicity, Treatment(reference="Unknown")) + C(prestige, Treatment(reference="Unknown")) + skill_score + project_score + experience_score + years_experience + {var1}:{var2}'
-            
-            try:
-                model_with_interaction = smf.ols(interaction_formula, data=data).fit()
-                
-                # Compare with model without interaction using F-test
-                base_formula = 'score ~ C(gender, Treatment(reference="Unknown")) + C(ethnicity, Treatment(reference="Unknown")) + C(prestige, Treatment(reference="Unknown")) + skill_score + project_score + experience_score + years_experience'
-                base_model = smf.ols(base_formula, data=data).fit()
-                
-                # F-test for interaction term
-                f_test = model_with_interaction.compare_f_test(base_model)
-                p_value = f_test[1]
-                
-                interaction_results[name][f"{var1}:{var2}"] = {
-                    'p_value': p_value,
-                    'significant': p_value < 0.05,
-                    'r_squared': model_with_interaction.rsquared
-                }
-                
-                significance = "✓ SIGNIFICANT" if p_value < 0.05 else "not significant"
-                print(f"  {var1} × {var2}: p = {p_value:.4f} ({significance})")
-                
-            except Exception as e:
-                print(f"  Error testing {var1} × {var2}: {e}")
-    
-    return interaction_results
+print("meta")
+rsq
+summary(models$meta)$r.squared
 
-# Test interaction effects
-interaction_results = test_interaction_effects(datasets)
+#use fitted best model to make predictions
+y_predicted <- predict(ridge_models$microsoft, s = opt_lambda$microsoft, newx = X$microsoft)
 
-def create_interaction_visualizations(datasets, interaction_pairs):
-    for company, data in datasets.items():
-        # Create main interaction plot with 1x3 layout
-        fig, axes = plt.subplots(1, 3, figsize=(15, 8))
-        fig.suptitle(f'Interaction Effects Analysis - {company.title()}', 
-                    fontsize=16, fontweight='bold')
-        
-        # Flatten axes for easier indexing
-        axes_flat = axes.flatten()
-        
-        # Plot each interaction pair
-        for idx, (var1, var2) in enumerate(interaction_pairs):
-            if idx >= len(axes_flat):
-                break
-                
-            ax = axes_flat[idx]
-            
-            # Create interaction heatmap
-            pivot_table = data.groupby([var1, var2])['score'].mean().unstack()
-            
-            # Create annotated heatmap
-            im = ax.imshow(pivot_table.values, cmap='RdYlBu', aspect='auto', 
-                          vmin=data['score'].min(), vmax=data['score'].max())
-            
-            # Set labels
-            ax.set_xticks(range(len(pivot_table.columns)))
-            ax.set_xticklabels(pivot_table.columns, rotation=45, ha='right')
-            ax.set_yticks(range(len(pivot_table.index)))
-            ax.set_yticklabels(pivot_table.index)
-            
-            # Add value annotations
-            for i in range(len(pivot_table.index)):
-                for j in range(len(pivot_table.columns)):
-                    ax.text(j, i, f'{pivot_table.iloc[i, j]:.1f}', 
-                           ha='center', va='center', fontweight='bold',
-                           fontsize=9, color='white' if pivot_table.iloc[i, j] < pivot_table.values.mean() else 'black')
-            
-            ax.set_xlabel(var2.title(), fontweight='bold')
-            ax.set_ylabel(var1.title(), fontweight='bold')
-            ax.set_title(f'{var1.title()} × {var2.title()} Interaction', 
-                        fontweight='bold', fontsize=12)
-        
-        plt.tight_layout()
-        plt.show()
+#find SST and SSE
+sst <- sum((Y$microsoft - mean(Y$microsoft))^2)
+sse <- sum((y_predicted - Y$microsoft)^2)
 
-interaction_pairs = [('gender', 'ethnicity'), ('ethnicity', 'prestige'), ('prestige', 'gender')]
-create_interaction_visualizations(datasets, interaction_pairs)
+#find R-Squared
+rsq <- 1 - sse/sst
+print("microsoft")
+rsq
+summary(models$microsoft)$r.squared
 ```
 
 
-```{python}
-
-def check_model_assumptions(models, datasets):
-    assumption_results = {}
-    
-    for name, model in models.items():
-        print(f"\nChecking assumptions for {name} model:")
-        assumption_results[name] = {}
-        
-        # Handle both OLS and Ridge regression models
-        is_ridge = isinstance(model, dict)
-        
-        if is_ridge:
-            # For Ridge regression, compute residuals and fitted values manually
-            data = datasets[name]
-            y = data['score'].values
-            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
-                              drop_first=False)
-            # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
-            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
-            X = X.drop(columns=cols_to_drop)
-            X_scaled = model['scaler'].transform(X)
-            fitted = model['model'].predict(X_scaled)
-            residuals = pd.Series(y - fitted)
-        else:
-            # For OLS models
-            residuals = model.resid
-            fitted = model.fittedvalues
-        
-        n = len(residuals)
-        
-        # 1. Normality test (Shapiro-Wilk)
-        if n < 5000:  # Shapiro-Wilk is recommended for n < 5000
-            shapiro_stat, shapiro_p = stats.shapiro(residuals)
-            assumption_results[name]['normality_p'] = shapiro_p
-            normality = "Normal" if shapiro_p > 0.05 else "Non-normal"
-            print(f"  Normality (Shapiro-Wilk): p = {shapiro_p:.4f} ({normality})")
-        
-        # 2. Homoscedasticity (Brown-Forsythe test — Levene's test with center='median')
-        try:
-            # Brown-Forsythe: perform Levene's test using the median, grouping residuals by
-            # quantiles of the fitted values (e.g., quartiles). This checks variance equality
-            # across different fitted-value regions.
-            groups = pd.qcut(fitted, q=4, labels=False, duplicates='drop')
-            unique_groups = np.unique(groups)
-            group_residuals = [residuals[groups == g].values for g in unique_groups]
-
-            if len(group_residuals) < 2:
-                raise ValueError('Not enough groups to perform Brown-Forsythe test')
-
-            bf_stat, bf_p = stats.levene(*group_residuals, center='median')
-            assumption_results[name]['homoscedasticity_p'] = bf_p
-            homoscedastic = "Homoscedastic" if bf_p > 0.05 else "Not Heteroscedastic"
-            print(f"  Homoscedasticity (Brown-Forsythe): p = {bf_p:.4f} ({homoscedastic})")
-        except Exception as e:
-            print(f"  Homoscedasticity test failed: {e}")
-        
-        # 3. Multicollinearity (VIF)
-        try:
-            # Calculate VIF for each variable. Handle both OLS (statsmodels) and Ridge (dict wrapper)
-            vif_data = pd.DataFrame()
-            if isinstance(model, dict):
-                # Recreate the design matrix used by the Ridge model
-                X_vif = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']],
-                                       drop_first=False)
-                cols_to_drop = [col for col in X_vif.columns if col.endswith('_Unknown')]
-                X_vif = X_vif.drop(columns=cols_to_drop)
-                exog = X_vif.values
-                exog_names = X_vif.columns
-            else:
-                # Use the underlying statsmodels exog matrix
-                exog = model.model.exog
-                exog_names = model.model.exog_names
-
-            vif_data["Variable"] = exog_names
-            vif_data["VIF"] = [variance_inflation_factor(exog, i)
-                                 for i in range(exog.shape[1])]
-
-            high_vif = vif_data[vif_data['VIF'] > 10]
-            assumption_results[name]['high_vif_count'] = len(high_vif)
-            print(f"  Multicollinearity: {len(high_vif)} variables with VIF > 10")
-
-        except Exception as e:
-            print(f"  VIF calculation failed: {e}")
-        
-        # 4. Outlier detection
-        Q1 = residuals.quantile(0.25)
-        Q3 = residuals.quantile(0.75)
-        IQR = Q3 - Q1
-        outlier_threshold = 1.5 * IQR
-        outliers = residuals[(residuals < (Q1 - outlier_threshold)) | 
-                           (residuals > (Q3 + outlier_threshold))]
-        assumption_results[name]['outlier_count'] = len(outliers)
-        print(f"  Outliers: {len(outliers)} potential outliers detected")
-    
-    return assumption_results
-
-# Check model assumptions
-assumption_results = check_model_assumptions(initial_models, datasets)
-```
-
-```{python}
-def refine_models(datasets, initial_models):
-    """Fit Ridge Regression models with cross-validated alpha parameter"""
-    from sklearn.linear_model import RidgeCV
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.metrics import mean_squared_error, r2_score
-    
-    refined_models = {}
-    model_comparisons = {}
-    
-    for name, initial_model in initial_models.items():
-        print(f"\nFitting Ridge Regression for {name}:")
-        
-        try:
-            # Get the dataset
-            data = datasets[name]
-            
-            # Prepare the formula and get design matrix
-            formula = 'score ~ gender + ethnicity + prestige + skill_score + project_score + experience_score + years_experience'
-            y = data['score'].values
-            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
-                              drop_first=False)
-            # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
-            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
-            X = X.drop(columns=cols_to_drop)
-            
-            # Standardize features for Ridge regression
-            scaler = StandardScaler()
-            X_scaled = scaler.fit_transform(X)
-            
-            # Fit RidgeCV with cross-validation to find optimal alpha
-            alphas = np.logspace(-2, 3, 100)
-            ridge_cv = RidgeCV(alphas=alphas, cv=5, scoring='r2')
-            ridge_cv.fit(X_scaled, y)
-            
-            # Get predictions and performance metrics
-            y_pred = ridge_cv.predict(X_scaled)
-            ridge_r2 = r2_score(y, y_pred)
-            ridge_mse = mean_squared_error(y, y_pred)
-            
-            # Store feature columns for later use
-            feature_columns = X.columns.tolist()
-            
-            # Store the ridge model with scaler and feature info
-            refined_models[name] = {
-                'model': ridge_cv,
-                'scaler': scaler,
-                'feature_columns': feature_columns
-            }
-            
-            # Calculate initial model metrics for comparison
-            initial_y_pred = initial_model.fittedvalues
-            initial_mse = mean_squared_error(y, initial_y_pred)
-            
-            model_comparisons[name] = {
-                'initial_rsq': initial_model.rsquared,
-                'ridge_rsq': ridge_r2,
-                'rsq_improvement': ridge_r2 - initial_model.rsquared,
-                'initial_mse': initial_mse,
-                'ridge_mse': ridge_mse,
-                'mse_improvement': initial_mse - ridge_mse,
-                'optimal_alpha': ridge_cv.alpha_,
-                'n_features': X_scaled.shape[1]
-            }
-            
-            print(f"  Optimal alpha: {ridge_cv.alpha_:.4f}")
-            print(f"  Initial OLS R²: {initial_model.rsquared:.4f}")
-            print(f"  Ridge R²: {ridge_r2:.4f}")
-            print(f"  R² Improvement: {ridge_r2 - initial_model.rsquared:+.4f}")
-            print(f"  Initial MSE: {initial_mse:.4f}")
-            print(f"  Ridge MSE: {ridge_mse:.4f}")
-            print(f"  MSE Improvement: {initial_mse - ridge_mse:+.4f}")
-            print(f"  Number of features: {X_scaled.shape[1]}")
-            
-        except Exception as e:
-            print(f"  Error fitting ridge model: {e}")
-            print(f"  Keeping original model for {name}")
-            refined_models[name] = initial_model
-            model_comparisons[name] = {
-                'initial_rsq': initial_model.rsquared,
-                'ridge_rsq': None,
-                'rsq_improvement': None,
-                'initial_mse': None,
-                'ridge_mse': None
-            }
-    
-    return refined_models, model_comparisons
-
-# Refine models
-refined_models, model_comparisons = refine_models(datasets, initial_models)
-
-```
-
-
-```{python}
-def create_model_comparison_plot(model_comparisons):
-    """Create visualization comparing initial OLS and Ridge Regression models"""
-    
-    companies = list(model_comparisons.keys())
-    
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
-    
-    # Filter out companies with None values
-    valid_companies = [c for c in companies if model_comparisons[c]['ridge_rsq'] is not None]
-    
-    # R-squared comparison
-    initial_rsq = [model_comparisons[company]['initial_rsq'] for company in valid_companies]
-    ridge_rsq = [model_comparisons[company]['ridge_rsq'] for company in valid_companies]
-    
-    x_pos = np.arange(len(valid_companies))
-    width = 0.35
-    
-    ax1.bar(x_pos - width/2, initial_rsq, width, label='Initial OLS', alpha=0.8, color='steelblue')
-    ax1.bar(x_pos + width/2, ridge_rsq, width, label='Ridge Regression', alpha=0.8, color='coral')
-    
-    ax1.set_xlabel('Company', fontweight='bold')
-    ax1.set_ylabel('R²', fontweight='bold')
-    ax1.set_title('R² Comparison: OLS vs Ridge Regression', fontweight='bold')
-    ax1.set_xticks(x_pos)
-    ax1.set_xticklabels([c.title() for c in valid_companies])
-    ax1.legend()
-    ax1.grid(True, alpha=0.3, axis='y')
-    ax1.set_ylim([0, 1])
-    
-    # MSE comparison
-    initial_mse = [model_comparisons[company]['initial_mse'] for company in valid_companies]
-    ridge_mse = [model_comparisons[company]['ridge_mse'] for company in valid_companies]
-    
-    ax2.bar(x_pos - width/2, initial_mse, width, label='Initial OLS', alpha=0.8, color='steelblue')
-    ax2.bar(x_pos + width/2, ridge_mse, width, label='Ridge Regression', alpha=0.8, color='coral')
-    
-    ax2.set_xlabel('Company', fontweight='bold')
-    ax2.set_ylabel('Mean Squared Error', fontweight='bold')
-    ax2.set_title('MSE Comparison: OLS vs Ridge Regression', fontweight='bold')
-    ax2.set_xticks(x_pos)
-    ax2.set_xticklabels([c.title() for c in valid_companies])
-    ax2.legend()
-    ax2.grid(True, alpha=0.3, axis='y')
-    
-    plt.tight_layout()
-    plt.show()
-
-create_model_comparison_plot(model_comparisons)
-
-```
-
-## 3.4. Model Diagnostics and Assumptions
-
-```{python}
-assumption_results = check_model_assumptions(refined_models, datasets)
-```
-
-```{python}
-def create_diagnostic_plots(models, datasets):
-    """Create comprehensive diagnostic plots with proper data alignment"""
-    from sklearn.preprocessing import StandardScaler
-    
-    for name, model in models.items():
-        print(f"\nCreating diagnostic plots for {name}...")
-        
-        fig, axes = plt.subplots(2, 3, figsize=(15, 10))
-        fig.suptitle(f'Model Diagnostic Plots - {name.title()}', 
-                    fontsize=16, fontweight='bold')
-        
-        # Handle both OLS and Ridge regression models
-        try:
-            from sklearn.linear_model import RidgeCV
-        except:
-            RidgeCV = None
-        
-        data = datasets[name]
-        actual_scores = data['score'].values
-        
-        if isinstance(model, dict):
-            # For Ridge regression, compute residuals and fitted values manually
-            y = actual_scores
-            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
-                              drop_first=False)
-            # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
-            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
-            X = X.drop(columns=cols_to_drop)
-            scaler = model['scaler']
-            # Use the stored scaler to transform (do not refit)
-            X_scaled = scaler.transform(X)
-            fitted = model['model'].predict(X_scaled)
-            residuals = y - fitted
-        else:
-            # For OLS models
-            residuals = model.resid.values
-            fitted = model.fittedvalues.values
-            # Get the actual data used in the model (after dropping NA)
-            try:
-                # Method 1: Get the row indices used in the model
-                if hasattr(model.model, 'row_labels'):
-                    used_indices = model.model.row_labels
-                    actual_scores = datasets[name].iloc[used_indices]['score'].values
-                else:
-                    # Method 2: Use the endogenous variable from the model
-                    actual_scores = model.model.endog
-            except:
-                # Method 3: Fallback - try to align by length
-                if len(fitted) == len(datasets[name]):
-                    actual_scores = datasets[name]['score'].values
-                else:
-                    # Method 4: Last resort - use fitted values length and assume it's a subset
-                    print(f"  Warning: Data alignment issue for {name}. Using available data.")
-                    actual_scores = datasets[name]['score'].iloc[:len(fitted)].values
-        
-        # Ensure we have the same number of observations
-        if len(actual_scores) != len(fitted):
-            print(f"  Data mismatch: {len(actual_scores)} actual scores vs {len(fitted)} fitted values")
-            # Use the minimum length to avoid errors
-            min_len = min(len(actual_scores), len(fitted))
-            actual_scores = actual_scores[:min_len]
-            fitted_adj = np.array(fitted[:min_len])
-            residuals_adj = np.array(residuals[:min_len])
-        else:
-            fitted_adj = np.array(fitted)
-            residuals_adj = np.array(residuals)
-        
-        # 1. Residuals vs Fitted
-        axes[0, 0].scatter(fitted_adj, residuals_adj, alpha=0.6, color='steelblue')
-        axes[0, 0].axhline(y=0, color='red', linestyle='--', alpha=0.8)
-        axes[0, 0].set_xlabel('Fitted Values')
-        axes[0, 0].set_ylabel('Residuals')
-        axes[0, 0].set_title('Residuals vs Fitted Values')
-        axes[0, 0].grid(True, alpha=0.3)
-        
-        # 2. Q-Q Plot
-        stats.probplot(residuals_adj, dist="norm", plot=axes[0, 1])
-        axes[0, 1].set_title('Q-Q Plot: Normality Check')
-        
-        # 3. Scale-Location Plot (sqrt standardized residuals vs fitted)
-        standardized_residuals = np.sqrt(np.abs(residuals_adj / residuals_adj.std()))
-        axes[0, 2].scatter(fitted_adj, standardized_residuals, alpha=0.6, color='green')
-        axes[0, 2].set_xlabel('Fitted Values')
-        axes[0, 2].set_ylabel('√|Standardized Residuals|')
-        axes[0, 2].set_title('Scale-Location Plot')
-        axes[0, 2].grid(True, alpha=0.3)
-        
-        # 4. Residuals Distribution
-        axes[1, 0].hist(residuals_adj, bins=20, alpha=0.7, color='purple', edgecolor='black')
-        axes[1, 0].axvline(x=0, color='red', linestyle='--', alpha=0.8)
-        axes[1, 0].set_xlabel('Residuals')
-        axes[1, 0].set_ylabel('Frequency')
-        axes[1, 0].set_title('Distribution of Residuals')
-        
-        # 5. Actual vs Predicted
-        axes[1, 1].scatter(actual_scores, fitted_adj, alpha=0.6, color='orange')
-        min_val = min(actual_scores.min(), fitted_adj.min())
-        max_val = max(actual_scores.max(), fitted_adj.max())
-        axes[1, 1].plot([min_val, max_val], [min_val, max_val], 'red', linestyle='--', alpha=0.8)
-        axes[1, 1].set_xlabel('Actual Scores')
-        axes[1, 1].set_ylabel('Predicted Scores')
-        axes[1, 1].set_title('Actual vs Predicted Values')
-        axes[1, 1].grid(True, alpha=0.3)
-        
-        # 6. Cook's Distance for influential points
-        try:
-            from statsmodels.stats.outliers_influence import OLSInfluence
-            # Only compute Cook's distance for OLS (statsmodels) models
-            if isinstance(model, dict):
-                axes[1, 2].text(0.5, 0.5, "Cook's Distance not available for Ridge models", 
-                                ha='center', va='center', transform=axes[1, 2].transAxes)
-                axes[1, 2].set_title("Cook's Distance (not available for Ridge)")
-            else:
-                influence = OLSInfluence(model)
-                cooks_d = influence.cooks_distance[0]
-                axes[1, 2].stem(range(len(cooks_d)), cooks_d, basefmt=" ")
-                axes[1, 2].axhline(y=4/len(cooks_d), color='red', linestyle='--', alpha=0.8, 
-                                 label='4/n threshold')
-                axes[1, 2].set_xlabel('Observation Index')
-                axes[1, 2].set_ylabel("Cook's Distance")
-                axes[1, 2].set_title("Cook's Distance for Influential Points")
-                axes[1, 2].legend()
-                axes[1, 2].grid(True, alpha=0.3)
-        except Exception as e:
-            axes[1, 2].text(0.5, 0.5, f"Cook's Distance\nCalculation Failed\n{str(e)}", 
-                          ha='center', va='center', transform=axes[1, 2].transAxes)
-            axes[1, 2].set_title("Cook's Distance")
-        
-        plt.tight_layout()
-        plt.show()
-
-create_diagnostic_plots(refined_models, datasets)
-
-```
-
-## 3.5 Final Model Interpretation and Comparisons
-
-```{python}
-def create_final_model_summary(refined_models, datasets):
-    """Create comprehensive final model summary and visualizations"""
-    from sklearn.linear_model import RidgeCV
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.metrics import r2_score
-    
-    # Create coefficient comparison plot
-    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    fig.suptitle('Final Model Coefficient Estimates Across Companies', 
-                fontsize=16, fontweight='bold')
-    
-    axes = axes.flatten()
-    
-    for idx, (company, model) in enumerate(refined_models.items()):
-        if idx >= len(axes):
-            break
-        
-        try:
-            # Check if model is Ridge or OLS
-            if isinstance(model, dict):
-                # For Ridge: get coefficients directly, compute bootstrap CIs
-                data = datasets[company]
-                y = data['score'].values
-                X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
-                                  drop_first=False)
-                # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
-                cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
-                X = X.drop(columns=cols_to_drop)
-                X_scaled = model['scaler'].transform(X)
-                
-                # Get fitted values and R²
-                y_pred = model['model'].predict(X_scaled)
-                r_squared = r2_score(y, y_pred)
-                
-                # Coefficients (from the model's coef_ attribute)
-                coefficients = model['model'].coef_
-                feature_names = X.columns
-                
-                # Bootstrap confidence intervals (simplified approach)
-                n_bootstrap = 100
-                bootstrap_coefs = []
-                np.random.seed(42)
-                
-                for _ in range(n_bootstrap):
-                    indices = np.random.choice(len(X_scaled), len(X_scaled), replace=True)
-                    X_boot = X_scaled[indices]
-                    y_boot = y[indices]
-                    model_boot = RidgeCV(alphas=np.logspace(-2, 3, 100), cv=5)
-                    model_boot.fit(X_boot, y_boot)
-                    bootstrap_coefs.append(model_boot.coef_)
-                
-                bootstrap_coefs = np.array(bootstrap_coefs)
-                lower_ci = np.percentile(bootstrap_coefs, 2.5, axis=0)
-                upper_ci = np.percentile(bootstrap_coefs, 97.5, axis=0)
-                
-                coef_df = pd.DataFrame({
-                    'coefficient': coefficients,
-                    'lower': lower_ci,
-                    'upper': upper_ci
-                }, index=feature_names)
-                
-            else:
-                # For OLS: use native conf_int method
-                coefficients = model.params
-                conf_intervals = model.conf_int(alpha=0.05)
-                conf_intervals.columns = ['lower', 'upper']
-                r_squared = model.rsquared
-                
-                coef_df = pd.DataFrame({
-                    'coefficient': coefficients,
-                    'lower': conf_intervals['lower'],
-                    'upper': conf_intervals['upper']
-                }).drop('Intercept', errors='ignore')
-            
-            # Sort by coefficient magnitude
-            coef_df = coef_df.reindex(coef_df['coefficient'].abs().sort_values(ascending=False).index)
-            
-            # Create coefficient plot
-            y_pos = np.arange(len(coef_df))
-            axes[idx].errorbar(coef_df['coefficient'], y_pos, 
-                              xerr=[coef_df['coefficient'] - coef_df['lower'], 
-                                    coef_df['upper'] - coef_df['coefficient']],
-                              fmt='o', color='steelblue', alpha=0.8, capsize=5, 
-                              markersize=6, linewidth=2)
-            
-            axes[idx].axvline(x=0, color='red', linestyle='--', alpha=0.7, linewidth=1)
-            axes[idx].set_yticks(y_pos)
-            axes[idx].set_yticklabels([label.replace('_', ' ').title() for label in coef_df.index], 
-                                    fontsize=9)
-            axes[idx].set_xlabel('Coefficient Estimate', fontweight='bold')
-            axes[idx].set_title(f'{company.title()}\nR² = {r_squared:.3f}', 
-                              fontweight='bold', fontsize=12)
-            axes[idx].grid(True, alpha=0.3)
-            
-        except Exception as e:
-            axes[idx].text(0.5, 0.5, f'Error creating plot:\n{str(e)}', 
-                          ha='center', va='center', transform=axes[idx].transAxes)
-            axes[idx].set_title(f'{company.title()}', fontweight='bold')
-    
-    plt.tight_layout()
-    plt.show()
-    
-    # Print model summaries
-    print("\nFINAL MODEL SUMMARIES:")
-    print("-" * 60)
-    
-    for company, model in refined_models.items():
-        from sklearn.linear_model import RidgeCV
-        from sklearn.metrics import r2_score
-        
-        print(f"\n{company.upper()} Final Model:")
-        
-        if isinstance(model, dict):
-            # For Ridge regression
-            data = datasets[company]
-            y = data['score'].values
-            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
-                              drop_first=False)
-            # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
-            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
-            X = X.drop(columns=cols_to_drop)
-            X_scaled = model['scaler'].transform(X)
-            y_pred = model['model'].predict(X_scaled)
-            r_squared = r2_score(y, y_pred)
-            
-            print(f"  Model Type: Ridge Regression")
-            print(f"  Optimal Alpha: {model['model'].alpha_:.4f}")
-            print(f"  R-squared: {r_squared:.4f}")
-            print(f"  Number of observations: {len(y)}")
-            print(f"  Number of features: {X_scaled.shape[1]}")
-
-            # Print initial OLS coefficients and p-values if available
-            try:
-                init_model = initial_models.get(company)
-                if init_model is not None:
-                    print("  Initial OLS Coefficients and p-values:")
-                    for var, coef in init_model.params.items():
-                        pval = init_model.pvalues.get(var, np.nan)
-                        print(f"    {var}: {coef:+.4f} (p = {pval:.4f})")
-                else:
-                    print("  No initial OLS model available for comparison.")
-            except Exception:
-                print("  Could not retrieve initial OLS model coefficients.")
-
-            # Compute bootstrap-based CIs and approximate p-values for Ridge coefficients
-            from sklearn.linear_model import Ridge
-            n_bootstrap = 300
-            bootstrap_coefs = []
-            np.random.seed(42)
-            for _ in range(n_bootstrap):
-                indices = np.random.choice(len(X_scaled), len(X_scaled), replace=True)
-                Xb = X_scaled[indices]
-                yb = y[indices]
-                rb = Ridge(alpha=float(model['model'].alpha_))
-                rb.fit(Xb, yb)
-                bootstrap_coefs.append(rb.coef_)
-
-            bootstrap_coefs = np.array(bootstrap_coefs)
-            lower_ci = np.percentile(bootstrap_coefs, 2.5, axis=0)
-            upper_ci = np.percentile(bootstrap_coefs, 97.5, axis=0)
-
-            # Approximate two-sided p-values from bootstrap distribution
-            pvals = []
-            for j in range(len(model['model'].coef_)):
-                bootj = bootstrap_coefs[:, j]
-                p = 2 * min(np.mean(bootj <= 0), np.mean(bootj >= 0))
-                pvals.append(p)
-
-            print("  Ridge Coefficients (approx. p-values from bootstrap and 95% CI):")
-            for name, coef, pval, lo, hi in zip(X.columns, model['model'].coef_, pvals, lower_ci, upper_ci):
-                print(f"    {name}: {coef:+.4f} (p ≈ {pval:.4f}) [{lo:.4f}, {hi:.4f}]")
-        else:
-            # For OLS models
-            print(f"  Model Type: OLS Regression")
-            print(f"  R-squared: {model.rsquared:.4f}")
-            print(f"  Adjusted R-squared: {model.rsquared_adj:.4f}")
-            print(f"  F-statistic: {model.fvalue:.2f}")
-            print(f"  Prob (F-statistic): {model.f_pvalue:.4f}")
-            print(f"  AIC: {model.aic:.2f}")
-            print(f"  BIC: {model.bic:.2f}")
-            print(f"  Number of observations: {model.nobs}")
-
-            # Print all coefficients with p-values
-            print("  OLS Coefficients and p-values:")
-            for var, coef in model.params.items():
-                pval = model.pvalues.get(var, np.nan)
-                print(f"    {var}: {coef:+.4f} (p = {pval:.4f})")
-
-            # Also highlight significant predictors
-            significant_coefs = model.pvalues[model.pvalues < 0.05].sort_values()
-            if len(significant_coefs) > 0:
-                print("  Significant predictors (p < 0.05):")
-                for var, pval in significant_coefs.items():
-                    coef = model.params[var]
-                    print(f"    {var}: {coef:+.4f} (p = {pval:.4f})")
-
-create_final_model_summary(refined_models, datasets)
-
-```
-
-
-```{python}
-def create_variable_importance_plot(models, datasets):
-    """Create variable importance comparison across all models"""
-    from sklearn.linear_model import RidgeCV
-    from sklearn.preprocessing import StandardScaler
-    
-    importance_data = []
-    
-    for company, model in models.items():
-        if isinstance(model, dict):
-            # For Ridge: use standardized coefficients as importance (they're already scaled)
-            data = datasets[company]
-            X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
-                              drop_first=False)
-            # Drop 'Unknown' categories to match model training
-            cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
-            X = X.drop(columns=cols_to_drop)
-            feature_names = X.columns
-            
-            # Importance based on absolute standardized coefficients
-            ridge_model = model['model']
-            importance_vals = np.abs(ridge_model.coef_)
-            
-            for var, imp_val, coef in zip(feature_names, importance_vals, ridge_model.coef_):
-                importance_data.append({
-                    'Company': company.title(),
-                    'Variable': var.replace('_', ' ').title(),
-                    'Importance': imp_val,
-                    'Coefficient': coef,
-                    'Direction': 'Positive' if coef > 0 else 'Negative'
-                })
-        else:
-            # For OLS: use absolute t-values as measure of importance
-            t_values = np.abs(model.tvalues.drop('Intercept', errors='ignore'))
-            
-            for var, t_val in t_values.items():
-                coef = model.params[var]
-                importance_data.append({
-                    'Company': company.title(),
-                    'Variable': var.replace('_', ' ').title(),
-                    'Importance': t_val,
-                    'Coefficient': coef,
-                    'Direction': 'Positive' if coef > 0 else 'Negative'
-                })
-    
-    importance_df = pd.DataFrame(importance_data)
-    
-    # Create plot
-    plt.figure(figsize=(14, 8))
-    
-    # Pivot for heatmap
-    pivot_df = importance_df.pivot(index='Variable', columns='Company', values='Importance')
-    
-    # Sort by average importance
-    pivot_df['Average'] = pivot_df.mean(axis=1)
-    pivot_df = pivot_df.sort_values('Average', ascending=False)
-    pivot_df = pivot_df.drop('Average', axis=1)
-    
-    # Create annotated heatmap
-    sns.heatmap(pivot_df, annot=True, fmt='.2f', cmap='YlOrRd', 
-                cbar_kws={'label': 'Absolute t-value (Importance)'},
-                linewidths=0.5, linecolor='white')
-    
-    plt.title('Variable Importance Comparison Across Final Models', 
-             fontsize=16, fontweight='bold', pad=20)
-    plt.xlabel('Company', fontweight='bold')
-    plt.ylabel('Predictor Variables', fontweight='bold')
-    plt.tight_layout()
-    plt.show()
-    
-    return importance_df
-
-# Create final summaries and visualizations
-importance_df = create_variable_importance_plot(refined_models, datasets)
-
-```
-
-```{python}
-print("ANALYSIS COMPLETE - SUMMARY")
-
-print(f"\nDatasets analyzed: {list(datasets.keys())}")
-print(f"Total models created: {len(refined_models)}")
-
-# Calculate overall performance metrics
-from sklearn.linear_model import RidgeCV
-from sklearn.metrics import r2_score
-from sklearn.preprocessing import StandardScaler
-
-r2_scores = []
-for company, model in refined_models.items():
-    if isinstance(model, dict):
-        # For Ridge: compute R² manually
-        data = datasets[company]
-        y = data['score'].values
-        X = pd.get_dummies(data[['gender', 'ethnicity', 'prestige', 'skill_score', 'project_score', 'experience_score', 'years_experience']], 
-                          drop_first=False)
-        # Drop 'Unknown' categories to make them reference categories (matching OLS behavior)
-        cols_to_drop = [col for col in X.columns if col.endswith('_Unknown')]
-        X = X.drop(columns=cols_to_drop)
-        X_scaled = model['scaler'].transform(X)
-        y_pred = model['model'].predict(X_scaled)
-        r2 = r2_score(y, y_pred)
-        r2_scores.append(r2)
-    else:
-        # For OLS: use native rsquared
-        r2_scores.append(model.rsquared)
-
-avg_rsquared = np.mean(r2_scores)
-
-print(f"\nAverage R-squared across models: {avg_rsquared:.4f}")
-if all(not isinstance(model, dict) for model in refined_models.values()):
-    avg_adj_rsquared = np.mean([model.rsquared_adj for model in refined_models.values()])
-    print(f"Average Adjusted R-squared across models: {avg_adj_rsquared:.4f}")
-
-# Identify most consistent predictors
-if not importance_df.empty:
-    variable_consistency = importance_df.groupby('Variable')['Importance'].mean().sort_values(ascending=False)
-    print(f"\nMost consistently important predictors:")
-    for var, importance in variable_consistency.head(5).items():
-        print(f"  {var}: {importance:.2f}")
-
-print("\n✓ All analysis complete! Check generated plots for visualizations.")
-```
-
-# 4 Conclusion
-
-# 5 References
+# Conclusion
 
 [^NaveenKumar]: https://www.demandsage.com/ai-recruitment-statistics/
 

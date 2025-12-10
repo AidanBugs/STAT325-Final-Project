@@ -22,6 +22,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -174,7 +208,130 @@ window.Quarto = {
 <h1>3 Results and Discussion</h1>
 <section id="initial-modeling" class="level2">
 <h2 class="anchored" data-anchor-id="initial-modeling">Initial Modeling</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>ibm <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">"data/granite3.3_8b.csv"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>ibm<span class="sc">$</span>gender <span class="ot">=</span> <span class="fu">relevel</span>(<span class="fu">factor</span>(ibm<span class="sc">$</span>gender), <span class="at">ref =</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>ibm<span class="sc">$</span>ethnicity <span class="ot">=</span> <span class="fu">relevel</span>(<span class="fu">factor</span>(ibm<span class="sc">$</span>ethnicity), <span class="at">ref =</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>ibm<span class="sc">$</span>prestige <span class="ot">=</span> <span class="fu">relevel</span>(<span class="fu">factor</span>(ibm<span class="sc">$</span>prestige), <span class="at">ref =</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">"data/llama3.1_8b.csv"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>meta<span class="sc">$</span>gender <span class="ot">=</span> <span class="fu">relevel</span>(<span class="fu">factor</span>(meta<span class="sc">$</span>gender), <span class="at">ref =</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>meta<span class="sc">$</span>ethnicity <span class="ot">=</span> <span class="fu">relevel</span>(<span class="fu">factor</span>(meta<span class="sc">$</span>ethnicity), <span class="at">ref =</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>meta<span class="sc">$</span>prestige <span class="ot">=</span> <span class="fu">relevel</span>(<span class="fu">factor</span>(meta<span class="sc">$</span>prestige), <span class="at">ref =</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>microsoft <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">"data/phi4_14b.csv"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>microsoft<span class="sc">$</span>gender <span class="ot">=</span> <span class="fu">relevel</span>(<span class="fu">factor</span>(microsoft<span class="sc">$</span>gender), <span class="at">ref =</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>microsoft<span class="sc">$</span>ethnicity <span class="ot">=</span> <span class="fu">relevel</span>(<span class="fu">factor</span>(microsoft<span class="sc">$</span>ethnicity), <span class="at">ref =</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>microsoft<span class="sc">$</span>prestige <span class="ot">=</span> <span class="fu">relevel</span>(<span class="fu">factor</span>(microsoft<span class="sc">$</span>prestige), <span class="at">ref =</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>models<span class="ot">=</span><span class="cn">NA</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>models<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>ibm)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(models<span class="sc">$</span>ibm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = score ~ gender + ethnicity + prestige + skill_score + 
+    project_score + experience_score + years_experience, data = ibm)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-69.945 -11.519   5.942  13.078  33.777 
+
+Coefficients:
+                          Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)               77.69718    6.48737  11.977  &lt; 2e-16 ***
+genderFemale              -2.25304    2.92340  -0.771   0.4411    
+genderMale                -6.90248    2.90991  -2.372   0.0179 *  
+ethnicityAfrican American  8.54478    5.71503   1.495   0.1353    
+ethnicityAsian             6.52131    6.67507   0.977   0.3289    
+ethnicityCaucasian        11.31109    5.45623   2.073   0.0385 *  
+ethnicityHispanic         10.60837    5.61769   1.888   0.0593 .  
+prestigeHigh              -3.68607    2.14469  -1.719   0.0860 .  
+prestigeLow               -3.46246    1.69783  -2.039   0.0417 *  
+prestigeMedium             0.68682    1.78618   0.385   0.7007    
+skill_score               -0.10363    0.04589  -2.258   0.0242 *  
+project_score             -0.07630    0.04012  -1.902   0.0575 .  
+experience_score          -0.08040    0.03661  -2.196   0.0284 *  
+years_experience          -0.74379    0.18186  -4.090 4.73e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 18.65 on 838 degrees of freedom
+Multiple R-squared:  0.07673,   Adjusted R-squared:  0.06241 
+F-statistic: 5.357 on 13 and 838 DF,  p-value: 2.473e-09</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>models<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>meta)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(models<span class="sc">$</span>meta)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = score ~ gender + ethnicity + prestige + skill_score + 
+    project_score + experience_score + years_experience, data = meta)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-22.5771  -3.1530   0.6273   4.9550  11.1384 
+
+Coefficients:
+                            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)               93.8050893  4.9344847  19.010   &lt;2e-16 ***
+genderFemale              -6.3194893  4.6807942  -1.350    0.177    
+genderMale                -6.0771735  4.6805950  -1.298    0.194    
+ethnicityAfrican American -0.9453498  1.0218348  -0.925    0.355    
+ethnicityAsian            -0.3434008  1.2523898  -0.274    0.784    
+ethnicityCaucasian        -0.8673318  0.9603392  -0.903    0.367    
+ethnicityHispanic          0.3980222  0.9966852   0.399    0.690    
+prestigeHigh              -0.4144583  0.6497467  -0.638    0.524    
+prestigeLow               -0.0208554  0.5156508  -0.040    0.968    
+prestigeMedium             0.1902366  0.5407470   0.352    0.725    
+skill_score                0.0007099  0.0084802   0.084    0.933    
+project_score              0.0080575  0.0085231   0.945    0.345    
+experience_score          -0.0008999  0.0105291  -0.085    0.932    
+years_experience           0.0167624  0.0557211   0.301    0.764    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 6.555 on 1042 degrees of freedom
+Multiple R-squared:  0.01017,   Adjusted R-squared:  -0.00218 
+F-statistic: 0.8235 on 13 and 1042 DF,  p-value: 0.6354</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>models<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>microsoft)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(models<span class="sc">$</span>microsoft)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = score ~ gender + ethnicity + prestige + skill_score + 
+    project_score + experience_score + years_experience, data = microsoft)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-40.737  -4.729   1.004   6.369  23.726 
+
+Coefficients:
+                          Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)               32.87479    4.89587   6.715 3.07e-11 ***
+genderFemale              -2.40881    2.71757  -0.886  0.37561    
+genderMale                -2.07788    2.72541  -0.762  0.44599    
+ethnicityAfrican American -0.19974    3.15410  -0.063  0.94952    
+ethnicityAsian             2.76124    3.53580   0.781  0.43501    
+ethnicityCaucasian        -0.09807    3.05814  -0.032  0.97442    
+ethnicityHispanic         -0.74139    3.10275  -0.239  0.81119    
+prestigeHigh               1.21437    3.12186   0.389  0.69736    
+prestigeLow                3.42243    3.48146   0.983  0.32581    
+prestigeMedium            -0.14855    2.02300  -0.073  0.94148    
+skill_score                0.11465    0.04528   2.532  0.01148 *  
+project_score              0.14796    0.02131   6.942 6.75e-12 ***
+experience_score           0.36927    0.02759  13.387  &lt; 2e-16 ***
+years_experience          -0.25405    0.08298  -3.061  0.00226 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 9.747 on 1053 degrees of freedom
+Multiple R-squared:  0.3121,    Adjusted R-squared:  0.3036 
+F-statistic: 36.75 on 13 and 1053 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
 <table class="caption-top table">
+<caption>Table 1: Initial Model Coefficients</caption>
 <colgroup>
 <col style="width: 10%">
 <col style="width: 21%">
@@ -198,11 +355,11 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td><strong>Intercept</strong></td>
-<td style="text-align: right;"><span class="math inline">\(93.81\)</span> (<span class="math inline">\(4.934\)</span>)</td>
+<td style="text-align: right;">93.81 (4.934)</td>
 <td style="text-align: left;"><span class="math inline">\(&lt;2\times10^{-16}\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(32.87\)</span> (<span class="math inline">\(4.896\)</span>)</td>
+<td style="text-align: right;">32.87 (4.896)</td>
 <td style="text-align: left;"><span class="math inline">\(3.07\times10^{-11}\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(77.70\)</span> (<span class="math inline">\(6.487\)</span>)</td>
+<td style="text-align: right;">77.70 (6.487)</td>
 <td style="text-align: left;"><span class="math inline">\(&lt;2\times10^{-16}\)</span></td>
 </tr>
 <tr class="even">
@@ -216,21 +373,21 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td>Female</td>
-<td style="text-align: right;"><span class="math inline">\(-6.319\)</span> (<span class="math inline">\(4.681\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.177\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-2.409\)</span> (<span class="math inline">\(2.718\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.376\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-2.253\)</span> (<span class="math inline">\(2.923\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.441\)</span></td>
+<td style="text-align: right;">-6.32 (4.681)</td>
+<td style="text-align: left;">0.177</td>
+<td style="text-align: right;">-2.409 (2.718)</td>
+<td style="text-align: left;">0.376</td>
+<td style="text-align: right;">-2.25 (2.923)</td>
+<td style="text-align: left;">0.441</td>
 </tr>
 <tr class="even">
 <td>Male</td>
-<td style="text-align: right;"><span class="math inline">\(-6.077\)</span> (<span class="math inline">\(4.681\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.194\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-2.078\)</span> (<span class="math inline">\(2.725\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.446\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-6.902\)</span> (<span class="math inline">\(2.910\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.018\)</span></td>
+<td style="text-align: right;">-6.08 (4.681)</td>
+<td style="text-align: left;">0.194</td>
+<td style="text-align: right;">-2.078 (2.725)</td>
+<td style="text-align: left;">0.446</td>
+<td style="text-align: right;">-6.902 (2.91)</td>
+<td style="text-align: left;">0.018</td>
 </tr>
 <tr class="odd">
 <td><strong>Ethnicity</strong></td>
@@ -243,39 +400,39 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td>African American</td>
-<td style="text-align: right;"><span class="math inline">\(-0.9453\)</span> (<span class="math inline">\(1.022\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.355\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-0.1997\)</span> (<span class="math inline">\(3.154\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.950\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(8.545\)</span> (<span class="math inline">\(5.715\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.135\)</span></td>
+<td style="text-align: right;">-0.945 (1.022)</td>
+<td style="text-align: left;">0.355</td>
+<td style="text-align: right;">-0.1997 (3.15)</td>
+<td style="text-align: left;">0.950</td>
+<td style="text-align: right;">8.545 (5.715)</td>
+<td style="text-align: left;">0.135</td>
 </tr>
 <tr class="odd">
 <td>Asian</td>
-<td style="text-align: right;"><span class="math inline">\(-0.3434\)</span> (<span class="math inline">\(1.252\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.784\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(2.761\)</span> (<span class="math inline">\(3.536\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.435\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(6.521\)</span> (<span class="math inline">\(6.675\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.329\)</span></td>
+<td style="text-align: right;">-0.343 (1.252)</td>
+<td style="text-align: left;">0.784</td>
+<td style="text-align: right;">2.761 (3.536)</td>
+<td style="text-align: left;">0.435</td>
+<td style="text-align: right;">6.521 (6.675)</td>
+<td style="text-align: left;">0.329</td>
 </tr>
 <tr class="even">
 <td>Caucasian</td>
-<td style="text-align: right;"><span class="math inline">\(-0.8673\)</span> (<span class="math inline">\(0.960\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.367\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-0.0981\)</span> (<span class="math inline">\(3.058\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.974\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(11.31\)</span> (<span class="math inline">\(5.456\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.039\)</span></td>
+<td style="text-align: right;">-0.867 (0.960)</td>
+<td style="text-align: left;">0.367</td>
+<td style="text-align: right;">-0.098 (3.058)</td>
+<td style="text-align: left;">0.974</td>
+<td style="text-align: right;">11.31 (5.456)</td>
+<td style="text-align: left;">0.039</td>
 </tr>
 <tr class="odd">
 <td>Hispanic</td>
-<td style="text-align: right;"><span class="math inline">\(0.3980\)</span> (<span class="math inline">\(0.997\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.690\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-0.7414\)</span> (<span class="math inline">\(3.103\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.811\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(10.61\)</span> (<span class="math inline">\(5.618\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.059\)</span></td>
+<td style="text-align: right;">0.3980 (0.997)</td>
+<td style="text-align: left;">0.690</td>
+<td style="text-align: right;">-0.741 (3.103)</td>
+<td style="text-align: left;">0.811</td>
+<td style="text-align: right;">10.61 (5.618)</td>
+<td style="text-align: left;">0.059</td>
 </tr>
 <tr class="even">
 <td><strong>Prestige</strong></td>
@@ -288,30 +445,30 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td>High</td>
-<td style="text-align: right;"><span class="math inline">\(-0.4145\)</span> (<span class="math inline">\(0.650\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.524\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(1.214\)</span> (<span class="math inline">\(3.122\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.697\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-3.686\)</span> (<span class="math inline">\(2.145\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.086\)</span></td>
+<td style="text-align: right;">-0.415 (0.650)</td>
+<td style="text-align: left;">0.524</td>
+<td style="text-align: right;">1.214 (3.122)</td>
+<td style="text-align: left;">0.697</td>
+<td style="text-align: right;">-3.686 (2.145)</td>
+<td style="text-align: left;">0.086</td>
 </tr>
 <tr class="even">
 <td>Medium</td>
-<td style="text-align: right;"><span class="math inline">\(0.1902\)</span> (<span class="math inline">\(0.541\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.725\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-0.1486\)</span> (<span class="math inline">\(2.023\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.941\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(0.6868\)</span> (<span class="math inline">\(1.786\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.701\)</span></td>
+<td style="text-align: right;">0.1902 (0.541)</td>
+<td style="text-align: left;">0.725</td>
+<td style="text-align: right;">-0.1486 (2.023)</td>
+<td style="text-align: left;">0.941</td>
+<td style="text-align: right;">0.687 (1.786)</td>
+<td style="text-align: left;">0.701</td>
 </tr>
 <tr class="odd">
 <td>Low</td>
-<td style="text-align: right;"><span class="math inline">\(-0.0209\)</span> (<span class="math inline">\(0.516\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.968\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(3.422\)</span> (<span class="math inline">\(3.481\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.326\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-3.462\)</span> (<span class="math inline">\(1.698\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.042\)</span></td>
+<td style="text-align: right;">-0.021 (0.516)</td>
+<td style="text-align: left;">0.968</td>
+<td style="text-align: right;">3.422 (3.481)</td>
+<td style="text-align: left;">0.326</td>
+<td style="text-align: right;">-3.462 (1.698)</td>
+<td style="text-align: left;">0.042</td>
 </tr>
 <tr class="even">
 <td><strong>Scores</strong></td>
@@ -324,97 +481,452 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td>Skills</td>
-<td style="text-align: right;"><span class="math inline">\(0.0007\)</span> (<span class="math inline">\(0.009\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.933\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(0.1147\)</span> (<span class="math inline">\(0.045\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.011\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-0.1036\)</span> (<span class="math inline">\(0.046\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.024\)</span></td>
+<td style="text-align: right;">0.0007 (0.009)</td>
+<td style="text-align: left;">0.933</td>
+<td style="text-align: right;">0.1147 (0.045)</td>
+<td style="text-align: left;">0.011</td>
+<td style="text-align: right;">-0.1036 (0.05)</td>
+<td style="text-align: left;">0.024</td>
 </tr>
 <tr class="even">
 <td>Projects</td>
-<td style="text-align: right;"><span class="math inline">\(0.0081\)</span> (<span class="math inline">\(0.009\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.345\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(0.1480\)</span> (<span class="math inline">\(0.021\)</span>)</td>
+<td style="text-align: right;">0.0081 (0.009)</td>
+<td style="text-align: left;">0.345</td>
+<td style="text-align: right;">0.1480 (0.021)</td>
 <td style="text-align: left;"><span class="math inline">\(6.75\times10^{-12}\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-0.0763\)</span> (<span class="math inline">\(0.040\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.058\)</span></td>
+<td style="text-align: right;">-0.0763 (0.04)</td>
+<td style="text-align: left;">0.058</td>
 </tr>
 <tr class="odd">
 <td>Experience</td>
-<td style="text-align: right;"><span class="math inline">\(-0.0009\)</span> (<span class="math inline">\(0.011\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.932\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(0.3693\)</span> (<span class="math inline">\(0.028\)</span>)</td>
+<td style="text-align: right;">-0.001 (0.011)</td>
+<td style="text-align: left;">0.932</td>
+<td style="text-align: right;">0.3693 (0.028)</td>
 <td style="text-align: left;"><span class="math inline">\(&lt;2\times10^{-16}\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-0.0804\)</span> (<span class="math inline">\(0.037\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.028\)</span></td>
+<td style="text-align: right;">-0.0804 (0.04)</td>
+<td style="text-align: left;">0.028</td>
 </tr>
 <tr class="even">
 <td>Years Experience</td>
-<td style="text-align: right;"><span class="math inline">\(0.0168\)</span> (<span class="math inline">\(0.056\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.764\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-0.2541\)</span> (<span class="math inline">\(0.083\)</span>)</td>
-<td style="text-align: left;"><span class="math inline">\(0.002\)</span></td>
-<td style="text-align: right;"><span class="math inline">\(-0.7438\)</span> (<span class="math inline">\(0.182\)</span>)</td>
+<td style="text-align: right;">0.0168 (0.056)</td>
+<td style="text-align: left;">0.764</td>
+<td style="text-align: right;">-0.2541 (0.083)</td>
+<td style="text-align: left;">0.002</td>
+<td style="text-align: right;">-0.7438 (0.18)</td>
 <td style="text-align: left;"><span class="math inline">\(4.73\times10^{-5}\)</span></td>
 </tr>
 </tbody>
 </table>
-<p>Let’s interpret all significant predictors at a value of <span class="math inline">\(\alpha=0.05\)</span>. For the Meta model, there were not any significant predictors, instead only the intercept was significant. Specifically for the Meta model, when all predictors are at <span class="math inline">\(0\)</span> and the categorical variables are at their reference group (Unknown), then the average expected score is <span class="math inline">\(93.81\)</span>. This suggests either the response variable (resume score) is either independent of the predictors or some transformations need to be applied to the response variable and/or the predictors.</p>
+<p>Let’s interpret all significant predictors at a value of <span class="math inline">\(\alpha=0.05\)</span> according to the values in Table 1. For the Meta model, there were not any significant predictors, instead only the intercept was significant. Specifically for the Meta model, when all predictors are at <span class="math inline">\(0\)</span> and the categorical variables are at their reference group (Unknown), then the average expected score is <span class="math inline">\(93.81\)</span>. This suggests either the response variable (resume score) is either independent of the predictors or some transformations need to be applied to the response variable and/or the predictors.</p>
 <p>For the Microsoft model, the only statistically significant predictors were the numerical ones. In the context of this problem, this is most likely a good thing as it suggests that the Microsoft language model is unbiased towards gender, ethnicity and institutional prestige. For the experience score predictor, the linear regression resulted in a coefficient of <span class="math inline">\(0.3693\)</span>, suggesting that the resume score increases by that value on average per unit increase of the experience score while holding all other predictors constant. Similarly, the skills score increased the resume score by <span class="math inline">\(0.1147\)</span> on average per unit increase of skills score while holding the other predictors constant. Project score also increased the resume score by <span class="math inline">\(0.1480\)</span> on average per unit increase of project score while holding the other predictors constant. Most surprising to me was the years experience had a negative coefficient, suggesting that the resume score decreased by <span class="math inline">\(0.2541\)</span> per year increase of experience while all other predictors remained constant. This could suggest that the Microsoft model is discriminating against older individuals who are closer to retirement but more data analysis would need to be done.</p>
 <p>The IBM model was quite sporadic with its significant predictors. All the categorical variables (gender, prestige, and ethnicity) were significant as well as the skills and experience scores and years experience. For ethnicity, knowing the candidate was white (compared to unknown ethnicity) increased the resume score by an average of <span class="math inline">\(11.31\)</span> while holding all other predictors constant. This was also the highest increase for any categorical variable across any model. For gender, knowing the candidate was male (compared to unknown gender) decreased the resume score by an average of <span class="math inline">\(6.902\)</span> while holding all other predictors constant. This was the greatest decrease for any categorical predictor across all models. For prestige, knowing the candidate was from a school with less prestige (compared to unknown prestige) decreased the resume score by an average of <span class="math inline">\(3.462\)</span> while holding all other variables constant.</p>
 </section>
 <section id="model-improvements-and-diagnostics" class="level2">
 <h2 class="anchored" data-anchor-id="model-improvements-and-diagnostics">Model Improvements and Diagnostics</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(onewaytests)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">shapiro.test</span>(models<span class="sc">$</span>ibm<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Shapiro-Wilk normality test
+
+data:  models$ibm$residuals
+W = 0.90642, p-value &lt; 2.2e-16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">shapiro.test</span>(models<span class="sc">$</span>meta<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Shapiro-Wilk normality test
+
+data:  models$meta$residuals
+W = 0.95486, p-value &lt; 2.2e-16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">shapiro.test</span>(models<span class="sc">$</span>microsoft<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Shapiro-Wilk normality test
+
+data:  models$microsoft$residuals
+W = 0.9736, p-value = 5.042e-13</code></pre>
+</div>
+</div>
 <p>First I applied the Shapiro-Wilk test to all the models to determine if the normality assumption is satisfied. All models resulted in p-values less than <span class="math inline">\(\alpha=0.05\)</span> which suggests that none of the residuals are normally distributted. More specifically, the Meta and IBM models had p-values less than <span class="math inline">\(2.2\times 10^{-16}\)</span> and the Microsoft model had a p-value of <span class="math inline">\(5.042\times 10^{-13}\)</span>. Thus, I will apply a box-cox transformation in an attempt to make the residuals normally distributed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(faraway)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">vif</span>(models<span class="sc">$</span>ibm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             genderFemale                genderMale ethnicityAfrican American 
+                 5.212369                  5.176482                  8.290406 
+           ethnicityAsian        ethnicityCaucasian         ethnicityHispanic 
+                 2.867575                 16.238085                 11.216688 
+             prestigeHigh               prestigeLow            prestigeMedium 
+                 1.363775                  1.580460                  1.553167 
+              skill_score             project_score          experience_score 
+                 1.021806                  1.096735                  1.122238 
+         years_experience 
+                 1.067864 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vif</span>(models<span class="sc">$</span>meta)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             genderFemale                genderMale ethnicityAfrican American 
+               134.574471                134.580401                  4.044371 
+           ethnicityAsian        ethnicityCaucasian         ethnicityHispanic 
+                 2.001009                  5.629096                  4.447988 
+             prestigeHigh               prestigeLow            prestigeMedium 
+                 1.214805                  1.301816                  1.273200 
+              skill_score             project_score          experience_score 
+                 1.007023                  1.019463                  1.016656 
+         years_experience 
+                 1.014186 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vif</span>(models<span class="sc">$</span>microsoft)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             genderFemale                genderMale ethnicityAfrican American 
+                20.732645                 20.855516                 12.349097 
+           ethnicityAsian        ethnicityCaucasian         ethnicityHispanic 
+                 3.837145                 24.115571                 16.783707 
+             prestigeHigh               prestigeLow            prestigeMedium 
+                 1.016330                  1.013075                  1.010703 
+              skill_score             project_score          experience_score 
+                 1.029190                  1.388214                  1.400930 
+         years_experience 
+                 1.034506 </code></pre>
+</div>
+</div>
 <p>Next according to the VIF test, the IBM model had VIF’s greater than <span class="math inline">\(10\)</span> for both the Caucasian (<span class="math inline">\(16.24\)</span>) and Hispanic (<span class="math inline">\(11.22\)</span>), suggesting that multicolinearity is present in the IBM model. For the Meta model, the Gender variable had VIFs greater than <span class="math inline">\(10\)</span> (both Male and Female had VIFs greater than <span class="math inline">\(134\)</span>) suggesting the Meta model may also be subject to multicolinearity. Lastly the microsoft model had VIFs of over <span class="math inline">\(20\)</span> for the gender column and many ethnicity categories a lso had VIFs greater than <span class="math inline">\(10\)</span>. Thus all models were subject to multicolinearity and will use Ridge Regression to help mitigate the effects of multicolinearity.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>gender_ethnicity_models <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>gender_ethnicity_models<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> gender<span class="sc">*</span>ethnicity <span class="sc">+</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>ibm)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>gender_ethnicity_models<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> gender<span class="sc">*</span>ethnicity <span class="sc">+</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>meta)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>gender_ethnicity_models<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> gender<span class="sc">*</span>ethnicity <span class="sc">+</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>microsoft)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(models<span class="sc">$</span>ibm, gender_ethnicity_models<span class="sc">$</span>ibm, <span class="at">test=</span><span class="st">"F"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: score ~ gender + ethnicity + prestige + skill_score + project_score + 
+    experience_score + years_experience
+Model 2: score ~ gender * ethnicity + gender + ethnicity + prestige + 
+    skill_score + project_score + experience_score + years_experience
+  Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+1    838 291396                           
+2    831 287987  7    3408.9 1.4052 0.1997</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(models<span class="sc">$</span>meta, gender_ethnicity_models<span class="sc">$</span>meta, <span class="at">test=</span><span class="st">"F"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: score ~ gender + ethnicity + prestige + skill_score + project_score + 
+    experience_score + years_experience
+Model 2: score ~ gender * ethnicity + gender + ethnicity + prestige + 
+    skill_score + project_score + experience_score + years_experience
+  Res.Df   RSS Df Sum of Sq      F Pr(&gt;F)
+1   1042 44771                           
+2   1037 44753  5     17.63 0.0817 0.9951</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(models<span class="sc">$</span>microsoft, gender_ethnicity_models<span class="sc">$</span>microsoft, <span class="at">test=</span><span class="st">"F"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: score ~ gender + ethnicity + prestige + skill_score + project_score + 
+    experience_score + years_experience
+Model 2: score ~ gender * ethnicity + gender + ethnicity + prestige + 
+    skill_score + project_score + experience_score + years_experience
+  Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+1   1053 100030                           
+2   1047  99263  6    767.23 1.3488 0.2325</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>gender_presitge_models <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>gender_presitge_models<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> gender<span class="sc">*</span>prestige <span class="sc">+</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>ibm)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>gender_presitge_models<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> gender<span class="sc">*</span>prestige <span class="sc">+</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>meta)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>gender_presitge_models<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> gender<span class="sc">*</span>prestige <span class="sc">+</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>microsoft)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(models<span class="sc">$</span>ibm, gender_presitge_models<span class="sc">$</span>ibm, <span class="at">test=</span><span class="st">"F"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: score ~ gender + ethnicity + prestige + skill_score + project_score + 
+    experience_score + years_experience
+Model 2: score ~ gender * prestige + gender + ethnicity + prestige + skill_score + 
+    project_score + experience_score + years_experience
+  Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+1    838 291396                           
+2    832 290837  6    558.83 0.2664 0.9525</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(models<span class="sc">$</span>meta, gender_presitge_models<span class="sc">$</span>meta, <span class="at">test=</span><span class="st">"F"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: score ~ gender + ethnicity + prestige + skill_score + project_score + 
+    experience_score + years_experience
+Model 2: score ~ gender * prestige + gender + ethnicity + prestige + skill_score + 
+    project_score + experience_score + years_experience
+  Res.Df   RSS Df Sum of Sq      F Pr(&gt;F)
+1   1042 44771                           
+2   1038 44678  4    92.478 0.5371 0.7085</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(models<span class="sc">$</span>microsoft, gender_presitge_models<span class="sc">$</span>microsoft, <span class="at">test=</span><span class="st">"F"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: score ~ gender + ethnicity + prestige + skill_score + project_score + 
+    experience_score + years_experience
+Model 2: score ~ gender * prestige + gender + ethnicity + prestige + skill_score + 
+    project_score + experience_score + years_experience
+  Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+1   1053 100030                           
+2   1050  99927  3    102.76 0.3599  0.782</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>ethnicity_presitge_models <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>ethnicity_presitge_models<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> prestige<span class="sc">*</span>ethnicity <span class="sc">+</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>ibm)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>ethnicity_presitge_models<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> prestige<span class="sc">*</span>ethnicity <span class="sc">+</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>meta)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>ethnicity_presitge_models<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">lm</span>(score <span class="sc">~</span> prestige<span class="sc">*</span>ethnicity <span class="sc">+</span> gender <span class="sc">+</span> ethnicity <span class="sc">+</span> prestige <span class="sc">+</span> skill_score <span class="sc">+</span> project_score <span class="sc">+</span> experience_score <span class="sc">+</span> years_experience, <span class="at">data=</span>microsoft)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(models<span class="sc">$</span>ibm, ethnicity_presitge_models<span class="sc">$</span>ibm, <span class="at">test=</span><span class="st">"F"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: score ~ gender + ethnicity + prestige + skill_score + project_score + 
+    experience_score + years_experience
+Model 2: score ~ prestige * ethnicity + gender + ethnicity + prestige + 
+    skill_score + project_score + experience_score + years_experience
+  Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+1    838 291396                           
+2    826 286938 12    4457.7 1.0693  0.383</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(models<span class="sc">$</span>meta, ethnicity_presitge_models<span class="sc">$</span>meta, <span class="at">test=</span><span class="st">"F"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: score ~ gender + ethnicity + prestige + skill_score + project_score + 
+    experience_score + years_experience
+Model 2: score ~ prestige * ethnicity + gender + ethnicity + prestige + 
+    skill_score + project_score + experience_score + years_experience
+  Res.Df   RSS Df Sum of Sq      F Pr(&gt;F)
+1   1042 44771                           
+2   1031 44631 11    139.19 0.2923 0.9874</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(models<span class="sc">$</span>microsoft, ethnicity_presitge_models<span class="sc">$</span>microsoft, <span class="at">test=</span><span class="st">"F"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: score ~ gender + ethnicity + prestige + skill_score + project_score + 
+    experience_score + years_experience
+Model 2: score ~ prestige * ethnicity + gender + ethnicity + prestige + 
+    skill_score + project_score + experience_score + years_experience
+  Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+1   1053 100030                           
+2   1045  99621  8    408.61 0.5358 0.8301</code></pre>
+</div>
+</div>
 <p>To test the presence and significance of interaction effects, I fitted new models on each of the datasetes with the same formula mentioned in section 2.3 with the addition of the interaction term. Specifically the interaction terms added were Ethnicity<span class="math inline">\(\times\)</span>Gender, Gender<span class="math inline">\(\times\)</span>Prestige, and Prestige<span class="math inline">\(\times\)</span>Gender. Each of these interaction terms were added one at a time and compared to the original formula using an anova test to determine if the interaction term was significant. All anova tests had p-values greater than <span class="math inline">\(\alpha=0.05\)</span> for each interaction term in all of the models so none of the interaction effects were significant and will not be added to the final modeling process.</p>
 </section>
 <section id="improved-model" class="level2">
 <h2 class="anchored" data-anchor-id="improved-model">Improved Model</h2>
-<p>When performing the box-cox transformation, all models resulted in <span class="math inline">\(\lambda=2\)</span> which will then be used to transform the response for the ridge regression. Thus, all the ridge regressions will be performed on Score<span class="math inline">\(^2\)</span> as the response variable. Note this <span class="math inline">\(\lambda=2\)</span> refers to the exponent for our response variable and not the weight of the penalty term in the ridge regression. It is also important to center and scale all numerical predictors during ridge regression because ridge regression is sensitive to the scale of inputs.</p>
 <div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(ibm<span class="sc">$</span>score)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]   0 100</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>ibm<span class="sc">$</span>score_new <span class="ot">=</span> ibm<span class="sc">$</span>score <span class="sc">+</span> <span class="fl">0.0000001</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(meta<span class="sc">$</span>score)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 65 98</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(microsoft<span class="sc">$</span>score)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 15 85</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>bc <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>bc<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">boxcox</span>(<span class="fu">lm</span>(ibm<span class="sc">$</span>score_new <span class="sc">~</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>bc<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">boxcox</span>(<span class="fu">lm</span>(meta<span class="sc">$</span>score <span class="sc">~</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>bc<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">boxcox</span>(<span class="fu">lm</span>(microsoft<span class="sc">$</span>score<span class="sc">~</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>lambda <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>lambda<span class="sc">$</span>ibm <span class="ot">&lt;-</span> bc<span class="sc">$</span>ibm<span class="sc">$</span>x[<span class="fu">which.max</span>(bc<span class="sc">$</span>ibm<span class="sc">$</span>y)]</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>lambda<span class="sc">$</span>meta <span class="ot">&lt;-</span> bc<span class="sc">$</span>meta<span class="sc">$</span>x[<span class="fu">which.max</span>(bc<span class="sc">$</span>meta<span class="sc">$</span>y)]</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>lambda<span class="sc">$</span>microsoft <span class="ot">&lt;-</span> bc<span class="sc">$</span>microsoft<span class="sc">$</span>x[<span class="fu">which.max</span>(bc<span class="sc">$</span>microsoft<span class="sc">$</span>y)]</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lambda<span class="sc">$</span>ibm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lambda<span class="sc">$</span>meta)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(lambda<span class="sc">$</span>microsoft)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">subset</span>(ibm, <span class="at">select=</span><span class="sc">-</span><span class="fu">c</span>(score, name, gender, ethnicity, prestige, score_new))</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">subset</span>(meta, <span class="at">select=</span><span class="sc">-</span><span class="fu">c</span>(score, name, gender, ethnicity, prestige))</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">subset</span>(microsoft, <span class="at">select=</span><span class="sc">-</span><span class="fu">c</span>(score, name, gender, ethnicity, prestige))</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>Cat <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>Cat<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">subset</span>(ibm, <span class="at">select=</span><span class="fu">c</span>(gender,ethnicity,prestige))</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>Cat<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">subset</span>(meta, <span class="at">select=</span><span class="fu">c</span>(gender,ethnicity,prestige))</span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>Cat<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">subset</span>(microsoft, <span class="at">select=</span><span class="fu">c</span>(gender,ethnicity,prestige))</span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>Y<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">I</span>(ibm<span class="sc">$</span>score<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>Y<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">I</span>(meta<span class="sc">$</span>score<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>Y<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">I</span>(microsoft<span class="sc">$</span>score<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>Y<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">scale</span>(Y<span class="sc">$</span>ibm, <span class="at">center =</span> T, <span class="at">scale =</span> T)</span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>Y<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">scale</span>(Y<span class="sc">$</span>meta, <span class="at">center =</span> T, <span class="at">scale =</span> T)</span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>Y<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">scale</span>(Y<span class="sc">$</span>microsoft, <span class="at">center =</span> T, <span class="at">scale =</span> T)</span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>ibm <span class="ot">&lt;-</span> <span class="fu">scale</span>(X<span class="sc">$</span>ibm, <span class="at">center =</span> T, <span class="at">scale=</span>T)  <span class="do">## always remember to standardize X</span></span>
+<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>meta <span class="ot">&lt;-</span> <span class="fu">scale</span>(X<span class="sc">$</span>meta, <span class="at">center =</span> T, <span class="at">scale=</span>T)  <span class="do">## always remember to standardize X</span></span>
+<span id="cb52-25"><a href="#cb52-25" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>microsoft <span class="ot">&lt;-</span> <span class="fu">scale</span>(X<span class="sc">$</span>microsoft, <span class="at">center =</span> T, <span class="at">scale=</span>T)  <span class="do">## always remember to standardize X</span></span>
+<span id="cb52-26"><a href="#cb52-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">cbind</span>(X<span class="sc">$</span>ibm, Cat<span class="sc">$</span>ibm)</span>
+<span id="cb52-28"><a href="#cb52-28" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">cbind</span>(X<span class="sc">$</span>meta, Cat<span class="sc">$</span>meta)</span>
+<span id="cb52-29"><a href="#cb52-29" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">cbind</span>(X<span class="sc">$</span>microsoft, Cat<span class="sc">$</span>microsoft)</span>
+<span id="cb52-30"><a href="#cb52-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-31"><a href="#cb52-31" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>ibm <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> X<span class="sc">$</span>ibm)</span>
+<span id="cb52-32"><a href="#cb52-32" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>meta <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> X<span class="sc">$</span>meta)</span>
+<span id="cb52-33"><a href="#cb52-33" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>microsoft <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> X<span class="sc">$</span>microsoft)</span>
+<span id="cb52-34"><a href="#cb52-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-35"><a href="#cb52-35" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb52-36"><a href="#cb52-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-37"><a href="#cb52-37" aria-hidden="true" tabindex="-1"></a>opt_lambda <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb52-38"><a href="#cb52-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-39"><a href="#cb52-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-40"><a href="#cb52-40" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">1</span>), <span class="at">oma =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">0</span>))</span>
+<span id="cb52-41"><a href="#cb52-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-42"><a href="#cb52-42" aria-hidden="true" tabindex="-1"></a>plot_cv_custom <span class="ot">&lt;-</span> <span class="cf">function</span>(cv_fit, title, color) {</span>
+<span id="cb52-43"><a href="#cb52-43" aria-hidden="true" tabindex="-1"></a>  lambda <span class="ot">&lt;-</span> cv_fit<span class="sc">$</span>lambda</span>
+<span id="cb52-44"><a href="#cb52-44" aria-hidden="true" tabindex="-1"></a>  log_lambda <span class="ot">&lt;-</span> <span class="fu">log</span>(lambda)</span>
+<span id="cb52-45"><a href="#cb52-45" aria-hidden="true" tabindex="-1"></a>  cvm <span class="ot">&lt;-</span> cv_fit<span class="sc">$</span>cvm  <span class="co"># Mean MSE</span></span>
+<span id="cb52-46"><a href="#cb52-46" aria-hidden="true" tabindex="-1"></a>  cvsd <span class="ot">&lt;-</span> cv_fit<span class="sc">$</span>cvsd  <span class="co"># Standard deviation</span></span>
+<span id="cb52-47"><a href="#cb52-47" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-48"><a href="#cb52-48" aria-hidden="true" tabindex="-1"></a>  upper_bound <span class="ot">&lt;-</span> cvm <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> cvsd</span>
+<span id="cb52-49"><a href="#cb52-49" aria-hidden="true" tabindex="-1"></a>  lower_bound <span class="ot">&lt;-</span> cvm <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> cvsd</span>
+<span id="cb52-50"><a href="#cb52-50" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-51"><a href="#cb52-51" aria-hidden="true" tabindex="-1"></a>  ylims <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">c</span>(lower_bound, upper_bound))</span>
+<span id="cb52-52"><a href="#cb52-52" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-53"><a href="#cb52-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="dv">1</span>, <span class="at">type =</span> <span class="st">"n"</span>, </span>
+<span id="cb52-54"><a href="#cb52-54" aria-hidden="true" tabindex="-1"></a>       <span class="at">xlim =</span> <span class="fu">range</span>(log_lambda), </span>
+<span id="cb52-55"><a href="#cb52-55" aria-hidden="true" tabindex="-1"></a>       <span class="at">ylim =</span> ylims,</span>
+<span id="cb52-56"><a href="#cb52-56" aria-hidden="true" tabindex="-1"></a>       <span class="at">xlab =</span> <span class="st">"log(λ)"</span>,</span>
+<span id="cb52-57"><a href="#cb52-57" aria-hidden="true" tabindex="-1"></a>       <span class="at">ylab =</span> <span class="st">"Mean-Squared Error"</span>,</span>
+<span id="cb52-58"><a href="#cb52-58" aria-hidden="true" tabindex="-1"></a>       <span class="at">main =</span> title,</span>
+<span id="cb52-59"><a href="#cb52-59" aria-hidden="true" tabindex="-1"></a>       <span class="at">cex.main =</span> <span class="fl">1.2</span>,</span>
+<span id="cb52-60"><a href="#cb52-60" aria-hidden="true" tabindex="-1"></a>       <span class="at">font.main =</span> <span class="dv">2</span>,</span>
+<span id="cb52-61"><a href="#cb52-61" aria-hidden="true" tabindex="-1"></a>       <span class="at">col.main =</span> color)</span>
+<span id="cb52-62"><a href="#cb52-62" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-63"><a href="#cb52-63" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add ±2 SD bands as dashed lines</span></span>
+<span id="cb52-64"><a href="#cb52-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines</span>(log_lambda, upper_bound, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"gray60"</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)</span>
+<span id="cb52-65"><a href="#cb52-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines</span>(log_lambda, lower_bound, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"gray60"</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>)</span>
+<span id="cb52-66"><a href="#cb52-66" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-67"><a href="#cb52-67" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add mean MSE line (solid, thicker)</span></span>
+<span id="cb52-68"><a href="#cb52-68" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines</span>(log_lambda, cvm, <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">col =</span> color)</span>
+<span id="cb52-69"><a href="#cb52-69" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-70"><a href="#cb52-70" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add optimal lambda vertical line</span></span>
+<span id="cb52-71"><a href="#cb52-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">log</span>(cv_fit<span class="sc">$</span>lambda.min), <span class="at">lty =</span> <span class="dv">3</span>, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb52-72"><a href="#cb52-72" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-73"><a href="#cb52-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-74"><a href="#cb52-74" aria-hidden="true" tabindex="-1"></a>cv_fit_ibm <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(X<span class="sc">$</span>ibm, Y<span class="sc">$</span>ibm, <span class="at">alpha =</span> <span class="dv">0</span>)</span>
+<span id="cb52-75"><a href="#cb52-75" aria-hidden="true" tabindex="-1"></a>opt_lambda<span class="sc">$</span>ibm <span class="ot">&lt;-</span> cv_fit_ibm<span class="sc">$</span>lambda.min</span>
+<span id="cb52-76"><a href="#cb52-76" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_cv_custom</span>(cv_fit_ibm, <span class="st">"IBM Cross-Validation Results"</span>, <span class="st">"darkblue"</span>)</span>
+<span id="cb52-77"><a href="#cb52-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-78"><a href="#cb52-78" aria-hidden="true" tabindex="-1"></a>cv_fit_meta <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(X<span class="sc">$</span>meta, Y<span class="sc">$</span>meta, <span class="at">alpha =</span> <span class="dv">0</span>)</span>
+<span id="cb52-79"><a href="#cb52-79" aria-hidden="true" tabindex="-1"></a>opt_lambda<span class="sc">$</span>meta <span class="ot">&lt;-</span> cv_fit_meta<span class="sc">$</span>lambda.min</span>
+<span id="cb52-80"><a href="#cb52-80" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_cv_custom</span>(cv_fit_meta, <span class="st">"Meta Cross-Validation Results"</span>, <span class="st">"darkgreen"</span>)</span>
+<span id="cb52-81"><a href="#cb52-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-82"><a href="#cb52-82" aria-hidden="true" tabindex="-1"></a>cv_fit_microsoft <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(X<span class="sc">$</span>microsoft, Y<span class="sc">$</span>microsoft, <span class="at">alpha =</span> <span class="dv">0</span>)</span>
+<span id="cb52-83"><a href="#cb52-83" aria-hidden="true" tabindex="-1"></a>opt_lambda<span class="sc">$</span>microsoft <span class="ot">&lt;-</span> cv_fit_microsoft<span class="sc">$</span>lambda.min</span>
+<span id="cb52-84"><a href="#cb52-84" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_cv_custom</span>(cv_fit_microsoft, <span class="st">"Microsoft Cross-Validation Results"</span>, <span class="st">"darkred"</span>)</span>
+<span id="cb52-85"><a href="#cb52-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-86"><a href="#cb52-86" aria-hidden="true" tabindex="-1"></a><span class="fu">mtext</span>(<span class="st">"Ridge Regression Cross-Validation Results"</span>, </span>
+<span id="cb52-87"><a href="#cb52-87" aria-hidden="true" tabindex="-1"></a>      <span class="at">outer =</span> <span class="cn">TRUE</span>, <span class="at">cex =</span> <span class="fl">1.5</span>, <span class="at">font =</span> <span class="dv">2</span>, <span class="at">line =</span> <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-line-plot" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-line-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-line-plot-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-line-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: A line plot
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
+<p>When performing the box-cox transformation, all models resulted in <span class="math inline">\(\lambda=2\)</span> which will then be used to transform the response for the ridge regression. Thus, all the ridge regressions will be performed on Score<span class="math inline">\(^2\)</span> as the response variable. Note this <span class="math inline">\(\lambda=2\)</span> refers to the exponent for our response variable and not the weight of the penalty term in the ridge regression. It is also important to center and scale all numerical predictors during ridge regression because ridge regression is sensitive to the scale of inputs.</p>
+<p>Next was performing Cross-Validation for the ridge regression to find the optimal parameter for the penalty term. According to Figure 1, the IBM model had an optimal lambda of <span class="math inline">\(0.2498\)</span>. For Meta, the optimal lambda was <span class="math inline">\(55.98\)</span>. For Microsoft, the lambda was <span class="math inline">\(0.0514\)</span>.</p>
 <div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>ridge_models <span class="ot">=</span> <span class="cn">NA</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(opt_lambda)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
 [1] NA
 
 $ibm
-[1] 0.3303358
+[1] 0.2498869
 
 $meta
 [1] 51.00987
 
 $microsoft
-[1] 0.06193337</code></pre>
+[1] 0.06797179</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>ridge_models<span class="sc">$</span>ibm <span class="ot">=</span> <span class="fu">glmnet</span>(X<span class="sc">$</span>ibm, Y<span class="sc">$</span>ibm, <span class="at">alpha=</span><span class="dv">0</span>, <span class="at">lambda=</span> opt_lambda<span class="sc">$</span>ibm)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(ridge_models<span class="sc">$</span>ibm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>15 x 1 sparse Matrix of class "dgCMatrix"
                                     s0
-(Intercept)                0.000253654
-skill_score               -0.055699280
-project_score             -0.052561127
-experience_score          -0.056810441
-years_experience          -0.115861021
-genderUnknown              0.159362922
-genderFemale               0.072829425
-genderMale                -0.105149994
-ethnicityAfrican American -0.038838561
-ethnicityAsian            -0.111666122
-ethnicityCaucasian         0.077141310
-ethnicityHispanic          0.043138205
-prestigeHigh              -0.109212148
-prestigeLow               -0.126915407
-prestigeMedium             0.051515811</code></pre>
+(Intercept)               -0.003652022
+skill_score               -0.059098278
+project_score             -0.055251286
+experience_score          -0.058690211
+years_experience          -0.123047145
+genderUnknown              0.166254465
+genderFemale               0.076351439
+genderMale                -0.109766313
+ethnicityAfrican American -0.032425989
+ethnicityAsian            -0.112957753
+ethnicityCaucasian         0.088203530
+ethnicityHispanic          0.054870354
+prestigeHigh              -0.121943195
+prestigeLow               -0.137562050
+prestigeMedium             0.049074274</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>ridge_models<span class="sc">$</span>meta <span class="ot">=</span> <span class="fu">glmnet</span>(X<span class="sc">$</span>meta, Y<span class="sc">$</span>meta, <span class="at">alpha=</span><span class="dv">0</span>, <span class="at">lambda=</span> opt_lambda<span class="sc">$</span>meta)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(ridge_models<span class="sc">$</span>meta)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>15 x 1 sparse Matrix of class "dgCMatrix"
                                      s0
@@ -434,51 +946,93 @@ prestigeHigh              -1.295985e-03
 prestigeLow               -3.137222e-05
 prestigeMedium             5.836672e-04</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>ridge_models<span class="sc">$</span>microsoft <span class="ot">=</span> <span class="fu">glmnet</span>(X<span class="sc">$</span>microsoft, Y<span class="sc">$</span>microsoft, <span class="at">alpha=</span><span class="dv">0</span>, <span class="at">lambda=</span> opt_lambda<span class="sc">$</span>microsoft)</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(ridge_models<span class="sc">$</span>microsoft)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>15 x 1 sparse Matrix of class "dgCMatrix"
                                      s0
-(Intercept)               -0.0049616235
-skill_score                0.0748171125
-project_score              0.2199991364
-experience_score           0.3779524405
-years_experience          -0.0718451144
-genderUnknown              0.1528079920
-genderFemale              -0.0059499910
-genderMale                -0.0005078563
-ethnicityAfrican American -0.0093279466
-ethnicityAsian             0.2588191130
-ethnicityCaucasian         0.0106730890
-ethnicityHispanic         -0.0489825202
-prestigeHigh               0.0758314275
-prestigeLow                0.2693877259
-prestigeMedium            -0.0063502229</code></pre>
+(Intercept)               -0.0045527081
+skill_score                0.0746989212
+project_score              0.2197804319
+experience_score           0.3758506147
+years_experience          -0.0712203340
+genderUnknown              0.1518195412
+genderFemale              -0.0060123115
+genderMale                -0.0005520487
+ethnicityAfrican American -0.0097338411
+ethnicityAsian             0.2564995872
+ethnicityCaucasian         0.0103574875
+ethnicityHispanic         -0.0491372663
+prestigeHigh               0.0757202988
+prestigeLow                0.2687122307
+prestigeMedium            -0.0058210648</code></pre>
 </div>
 </div>
+<p>After finding the optimal lambda for each model, we can report the <span class="math inline">\(4\)</span> largest coefficients, which represent the variables most important for explaining the variation of the response variable. For the IBM model, the <span class="math inline">\(4\)</span> largest coefficients were low institutional prestige (<span class="math inline">\(-0.1376\)</span>), high institutional prestige (<span class="math inline">\(-0.1219\)</span>), years experience (<span class="math inline">\(-0.1230\)</span>) and asian ethnicity (<span class="math inline">\(-0.1129\)</span>). For the meta model, all coefficients were extremely small suggesting a rather poor fit overall. Specifically, the largest were hispanic ethnicity (<span class="math inline">\(3.018\times 10^{-3}\)</span>), caucasian ethnicity (<span class="math inline">\(-1.748\times 10^{-3\)</span>), african american ethnicity (<span class="math inline">\(-1.312\times 10^{-3}\)</span>) and high institutional prestige (<span class="math inline">\(-1.183\times 10^{-3}\)</span>). While these models are poor fits (<span class="math inline">\(R^2_{ibm}=0.0689,R^2_{meta}=0.00042\)</span>) this still demonstrates subtle biases within these models which should aim to be removed. This demonstrates this because the most important factors for the ridge regression were the categorical variables (gender, prestige, ethnicity) that should not influence a candidates’ fit for the job.</p>
+<p>The microsoft model had by far the best results for minimizing bias and also the highest performing model of the bunch (<span class="math inline">\(R^2_{microsoft}=0.3221\)</span>). The top <span class="math inline">\(4\)</span> largest predictors for this model were experience score (<span class="math inline">\(0.3817\)</span>), low prestige (<span class="math inline">\(0.2705\)</span>), asian ethnicity ($ 0.2625$), and project score (<span class="math inline">\(0.2203\)</span>), with most other predictors being below <span class="math inline">\(0.1\)</span>. It is important to note when interpreting the coefficient for a ridge regression, we are looking at an average increase in the response (which is a scaled and centered Score<span class="math inline">\(^2\)</span>) per unit increase in the predictor (for numerical varaibles a unit would be one standard deviation since the variables are scaled, for categorical interpretation is the same as before) while holding the other variables constant.</p>
 <div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co">#use fitted best model to make predictions</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>y_predicted <span class="ot">&lt;-</span> <span class="fu">predict</span>(ridge_models<span class="sc">$</span>ibm, <span class="at">s =</span> opt_lambda<span class="sc">$</span>ibm, <span class="at">newx =</span> X<span class="sc">$</span>ibm)</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a><span class="co">#find SST and SSE</span></span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>sst <span class="ot">&lt;-</span> <span class="fu">sum</span>((Y<span class="sc">$</span>ibm <span class="sc">-</span> <span class="fu">mean</span>(Y<span class="sc">$</span>ibm))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>sse <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_predicted <span class="sc">-</span> Y<span class="sc">$</span>ibm)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a><span class="co">#find R-Squared</span></span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>rsq <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> sse<span class="sc">/</span>sst</span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"ibm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "ibm"</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>rsq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.0676641</code></pre>
+<pre><code>[1] 0.06898701</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(models<span class="sc">$</span>ibm)<span class="sc">$</span>r.squared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.0767305</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co">#use fitted best model to make predictions</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>y_predicted <span class="ot">&lt;-</span> <span class="fu">predict</span>(ridge_models<span class="sc">$</span>meta, <span class="at">s =</span> opt_lambda<span class="sc">$</span>meta, <span class="at">newx =</span> X<span class="sc">$</span>meta)</span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a><span class="co">#find SST and SSE</span></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>sst <span class="ot">&lt;-</span> <span class="fu">sum</span>((Y<span class="sc">$</span>meta <span class="sc">-</span> <span class="fu">mean</span>(Y<span class="sc">$</span>meta))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>sse <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_predicted <span class="sc">-</span> Y<span class="sc">$</span>meta)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a><span class="co">#find R-Squared</span></span>
+<span id="cb67-9"><a href="#cb67-9" aria-hidden="true" tabindex="-1"></a>rsq <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> sse<span class="sc">/</span>sst</span>
+<span id="cb67-10"><a href="#cb67-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-11"><a href="#cb67-11" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"meta"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "meta"</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>rsq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.0004594969</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(models<span class="sc">$</span>meta)<span class="sc">$</span>r.squared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.01016942</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co">#use fitted best model to make predictions</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>y_predicted <span class="ot">&lt;-</span> <span class="fu">predict</span>(ridge_models<span class="sc">$</span>microsoft, <span class="at">s =</span> opt_lambda<span class="sc">$</span>microsoft, <span class="at">newx =</span> X<span class="sc">$</span>microsoft)</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a><span class="co">#find SST and SSE</span></span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>sst <span class="ot">&lt;-</span> <span class="fu">sum</span>((Y<span class="sc">$</span>microsoft <span class="sc">-</span> <span class="fu">mean</span>(Y<span class="sc">$</span>microsoft))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>sse <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_predicted <span class="sc">-</span> Y<span class="sc">$</span>microsoft)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a><span class="co">#find R-Squared</span></span>
+<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>rsq <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> sse<span class="sc">/</span>sst</span>
+<span id="cb73-10"><a href="#cb73-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"microsoft"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "microsoft"</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>rsq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.3219432</code></pre>
+<pre><code>[1] 0.3218248</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(models<span class="sc">$</span>microsoft)<span class="sc">$</span>r.squared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.3121289</code></pre>
 </div>
@@ -487,6 +1041,7 @@ prestigeMedium            -0.0063502229</code></pre>
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
+<p>Thus, this project found that there is likely bias in the decision making process of resume screeners. More specifically, for most of the models, gender, ethnicity, and institutional prestige seemed to play more of an important role in determining a candidate’s fit for the job than other professional factors like work experience and projects. Additionally, the data was extremely variable with each model having completely different distributions of scores, ethnicitiies and prestiges, with certain models not appearing to have a very consistent scoring process or method. It is important to note however that the model that utilized the professional experience the most in determining the resume’s overall score was the Microsoft model (<em>phi4_14b</em>) which also had the largest parameter size of the group. More studies should be done to analyze if model size plays a factor in presence of bias as well as potentially look at a temporal aspect by seeing if newer models tend to have less biases than older models.</p>
 </section>
 
 
